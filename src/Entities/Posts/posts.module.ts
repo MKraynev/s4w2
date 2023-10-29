@@ -4,10 +4,11 @@ import { PostController } from './Controller/posts.controller';
 import { PostsRepoModule } from './PostsRepo/postsRepo.module';
 import { BlogsRepoModule } from '../Blogs/BlogsRepo/blogsRepo.module';
 import { LikesModule } from '../Likes/likes.module';
+import { CommentModule } from '../Comments/comments.module';
 
 
 @Module({
-    imports: [PostsRepoModule, BlogsRepoModule, LikesModule],
+    imports: [PostsRepoModule, BlogsRepoModule, LikesModule, CommentModule],
     controllers: [PostController],
     providers: [PostService],
     exports: [PostService]
