@@ -1,3 +1,3 @@
-export type CommentTarget = {
-    "posts"
+export enum CommentTarget {
+    posts
 }

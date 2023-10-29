@@ -20,7 +20,13 @@ export class CommentDto extends CreateCommentDto {
     userId: string;
 
     @Prop({ required: true })
+    userLogin: string;
+
+    @Prop({ required: true, type: Number })
     target: CommentTarget;
+
+    @Prop({ required: true })
+    targetId: string;
 
     @Prop({ required: true })
     content: string;
@@ -29,9 +35,10 @@ export class CommentDto extends CreateCommentDto {
 
     updatedAt: Date;
 
-    constructor(userId: string, data: CreateCommentDto) {
+    constructor(userId: string, userLogin: string, data: CreateCommentDto) {
         super(data.content, data.target)
         this.userId = userId;
+        this.userLogin = userLogin;
     }
 }
 
