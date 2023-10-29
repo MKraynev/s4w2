@@ -1,11 +1,11 @@
 import { HydratedDocument } from "mongoose";
-import { MongooseRepo } from "../../Entities/Repos/Mongoose/MongooseRepo";
+import { MongooseRepo } from "../Repos/Mongoose/MongooseRepo";
 import { ServiceExecutionResult } from "./Types/ServiseExecutionResult";
 import { ServiceExecutionResultStatus } from "./Types/ServiceExecutionStatus";
 import { ServiceDto } from "./Types/ServiceDto";
 
 export type TakeResult<T> = {
-    count:  number,
+    count: number,
     items: Array<T>
 }
 
@@ -18,7 +18,7 @@ export class CrudService<
     constructor(private repo: Repo) { }
 
     public async Take(sortBy: keyof (EntityType), sortDirection: "asc" | "desc", searchBy?: keyof (EntityType), searchValue?: string, skip: number = 0, limit: number = 10)
-    :Promise <ServiceExecutionResult<ServiceExecutionResultStatus, TakeResult<ServiceDto<EntityType>>>>{
+        : Promise<ServiceExecutionResult<ServiceExecutionResultStatus, TakeResult<ServiceDto<EntityType>>>> {
 
         let count = await this.repo.Count(searchBy, searchValue);
         skip = count > skip ? skip : 0;

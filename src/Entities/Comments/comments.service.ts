@@ -3,7 +3,7 @@ import { CrudService, TakeResult } from "../../Common/Services/crudService";
 import { CreateCommentDto } from "./CommentsRepo/Dto/CreateCommentDto";
 import { CommentDocument, CommentDto } from "./CommentsRepo/Schema/comment.schema";
 import { CommentRepoService } from "./CommentsRepo/commentRepo.service";
-import { MongooseFindUnit, MongooseRepoFindPattern } from "../Repos/Mongoose/Searcher/MongooseRepoFindPattern";
+import { MongooseFindUnit, MongooseRepoFindPattern } from "../../Common/Repos/Mongoose/Searcher/MongooseRepoFindPattern";
 import { CommentTarget } from "./CommentsRepo/Dto/CommentTarget";
 import { ServiceExecutionResultStatus } from "../../Common/Services/Types/ServiceExecutionStatus";
 import { ServiceExecutionResult } from "../../Common/Services/Types/ServiseExecutionResult";

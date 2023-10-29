@@ -6,7 +6,7 @@ import { UsersRepoService } from "./UsersRepo/usersRepo.service";
 import { ServiceExecutionResult } from "../../Common/Services/Types/ServiseExecutionResult";
 import { ServiceExecutionResultStatus } from "../../Common/Services/Types/ServiceExecutionStatus";
 import { ServiceDto } from "../../Common/Services/Types/ServiceDto";
-import { MongooseFindUnit, MongooseRepoFindPattern } from "../Repos/Mongoose/Searcher/MongooseRepoFindPattern";
+import { MongooseFindUnit, MongooseRepoFindPattern } from "../../Common/Repos/Mongoose/Searcher/MongooseRepoFindPattern";
 
 @Injectable()
 export class UserService extends CrudService<CreateUserDto, UserDto, UserDocument, UsersRepoService>{
