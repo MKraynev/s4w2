@@ -7,7 +7,7 @@ import { ControllerBlogDto } from './Entities/blogs.controllerDto';
 import { PostService } from '../Posts/posts.service';
 import { CreatePostDto } from '../Posts/PostsRepo/Dtos/CreatePostDto';
 import { BlogDto } from './BlogsRepo/Schema/blog.schema';
-import { InputPaginator, OutputPaginator } from '../../Common/Paginator/Paginator';
+import { InputPaginator, OutputPaginator } from '../../Paginator/Paginator';
 import { QueryPaginator } from '../../Common/Routes/QueryParams/PaginatorQueryParams';
 import { PostDto } from "../Posts/PostsRepo/Schema/post.schema"
 import { LikeService } from '../Likes/likes.service';

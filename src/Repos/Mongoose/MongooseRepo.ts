@@ -1,5 +1,5 @@
 import { HydratedDocument, Model } from "mongoose";
-import { MongooseRepoFindPattern } from "./Searcher/MongooseRepoFindPattern";
+import { MongooseRepoFindPattern_OR } from "./Searcher/MongooseRepoFindPattern";
 
 export class MongooseRepo<ModelType, CreateDTO, EntityDocument extends HydratedDocument<ModelType>>{
   constructor(private model: Model<ModelType>) { }
@@ -26,7 +26,7 @@ export class MongooseRepo<ModelType, CreateDTO, EntityDocument extends HydratedD
     return await this.model.count(searchPattern);
   }
 
-  async FindByPatterns(findPattern: MongooseRepoFindPattern<ModelType>, sortBy: keyof (ModelType), sortDirection: "asc" | "desc", skip: number = 0, limit: number = 10): Promise<EntityDocument[]> {
+  async FindByPatterns(findPattern: MongooseRepoFindPattern_OR<ModelType>, sortBy: keyof (ModelType), sortDirection: "asc" | "desc", skip: number = 0, limit: number = 10): Promise<EntityDocument[]> {
     try{
       let sorter = this.GetSortPattern(sortBy, sortDirection);
 
@@ -37,7 +37,7 @@ export class MongooseRepo<ModelType, CreateDTO, EntityDocument extends HydratedD
     }
   }
 
-  async CountByPattern(findPattern: MongooseRepoFindPattern<ModelType>){
+  async CountByPattern(findPattern: MongooseRepoFindPattern_OR<ModelType>){
     try{
       return await this.model.count(findPattern.value);
     }

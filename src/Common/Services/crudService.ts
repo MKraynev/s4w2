@@ -1,5 +1,5 @@
 import { HydratedDocument } from "mongoose";
-import { MongooseRepo } from "../Repos/Mongoose/MongooseRepo";
+import { MongooseRepo } from "../../Repos/Mongoose/MongooseRepo";
 import { ServiceExecutionResult } from "./Types/ServiseExecutionResult";
 import { ServiceExecutionResultStatus } from "./Types/ServiceExecutionStatus";
 import { ServiceDto } from "./Types/ServiceDto";

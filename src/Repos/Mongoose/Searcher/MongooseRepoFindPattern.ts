@@ -1,4 +1,4 @@
-export class MongooseRepoFindPattern<T>{
+export class MongooseRepoFindPattern_OR<T>{
     readonly value: any = {};
 
     constructor(...findUnits: MongooseFindUnit<T>[] | undefined[]) {

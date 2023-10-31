@@ -3,7 +3,7 @@ import { CrudService, TakeResult } from "../../Common/Services/crudService";
 import { CreateCommentDto } from "./CommentsRepo/Dto/CreateCommentDto";
 import { CommentDocument, CommentDto } from "./CommentsRepo/Schema/comment.schema";
 import { CommentRepoService } from "./CommentsRepo/commentRepo.service";
-import { MongooseFindUnit, MongooseRepoFindPattern } from "../../Common/Repos/Mongoose/Searcher/MongooseRepoFindPattern";
+import { MongooseFindUnit, MongooseRepoFindPattern_OR } from "../../Repos/Mongoose/Searcher/MongooseRepoFindPattern";
 import { CommentTarget } from "./CommentsRepo/Dto/CommentTarget";
 import { ServiceExecutionResultStatus } from "../../Common/Services/Types/ServiceExecutionStatus";
 import { ServiceExecutionResult } from "../../Common/Services/Types/ServiseExecutionResult";
@@ -39,7 +39,7 @@ export class CommentService extends CrudService<CreateCommentDto, CommentDto, Co
             }
             : undefined;
 
-        let findPattern = new MongooseRepoFindPattern(targetFindUnit, idFindUnit)
+        let findPattern = new MongooseRepoFindPattern_OR(targetFindUnit, idFindUnit)
 
         let countComments = await this.commentRepo.CountByPattern(findPattern)
         let foundComments = (await this.commentRepo.FindByPatterns(findPattern, sortBy, sortDirection, skip, limit)).map(comment => comment.toObject()) as ServiceDto<CommentDto>[];

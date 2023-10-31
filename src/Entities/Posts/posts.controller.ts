@@ -4,7 +4,7 @@ import { ServiceExecutionResultStatus } from "../../Common/Services/Types/Servic
 import { CreatePostDto } from "./PostsRepo/Dtos/CreatePostDto";
 import { QueryPaginator } from "../../Common/Routes/QueryParams/PaginatorQueryParams";
 import { PostDto } from "./PostsRepo/Schema/post.schema";
-import { InputPaginator, OutputPaginator } from "../../Common/Paginator/Paginator";
+import { InputPaginator, OutputPaginator } from "../../Paginator/Paginator";
 import { LikeService } from "../Likes/likes.service";
 import { CreateCommentDto } from "../Comments/CommentsRepo/Dto/CreateCommentDto";
 

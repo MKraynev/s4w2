@@ -1,5 +1,5 @@
 import { ExecutionContext, createParamDecorator } from "@nestjs/common";
-import { InputPaginator } from "../../Paginator/Paginator";
+import { InputPaginator } from "../../../Paginator/Paginator";
 
 export const QueryPaginator = createParamDecorator(
     (data: unknown, ctx: ExecutionContext) => {

@@ -1,7 +1,7 @@
 import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, NotFoundException, Param, Post, Query } from "@nestjs/common";
 import { UserDto } from "./UsersRepo/Schema/user.schema";
 import { QueryPaginator } from "../../Common/Routes/QueryParams/PaginatorQueryParams";
-import { InputPaginator, OutputPaginator } from "../../Common/Paginator/Paginator";
+import { InputPaginator, OutputPaginator } from "../../Paginator/Paginator";
 import { UserService } from "./users.service";
 import { find } from "rxjs";
 import { ServiceExecutionResultStatus } from "../../Common/Services/Types/ServiceExecutionStatus";
@@ -19,7 +19,7 @@ export class UserController {
         @Query('sortDirection') sortDirecrion: "desc" | "asc" = "desc",
         @QueryPaginator() paginator: InputPaginator
     ) {
-        let findUsers = await this.userService.TakeByLoginAndEmail(sortBy, sortDirecrion, loginTerm, emailTerm, paginator.skipElements, paginator.pageSize);
+        let findUsers = await this.userService.TakeByLoginOrEmail(sortBy, sortDirecrion, loginTerm, emailTerm, paginator.skipElements, paginator.pageSize);
 
         switch (findUsers.executionStatus) {
             case ServiceExecutionResultStatus.Success:

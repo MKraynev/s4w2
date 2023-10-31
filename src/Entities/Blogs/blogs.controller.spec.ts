@@ -5,7 +5,7 @@ import { PostService } from "../Posts/posts.service";
 import { LikeService } from "../Likes/likes.service";
 import { CreateBlogDto } from "./BlogsRepo/Dtos/CreateBlogDto";
 import { mockBlogService } from "./Tests/mocks/blogs.mockService";
-import { InputPaginator } from "../../Common/Paginator/Paginator";
+import { InputPaginator } from "../../Paginator/Paginator";
 
 describe("Blogs controllers", () => {
     let controller: BlogController;
