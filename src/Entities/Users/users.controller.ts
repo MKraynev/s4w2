@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, NotFoundException, Param, Post, Query } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, NotFoundException, Param, Post, Query, UseGuards } from "@nestjs/common";
 import { UserDto } from "./UsersRepo/Schema/user.schema";
 import { QueryPaginator } from "../../Common/Routes/QueryParams/PaginatorQueryParams";
 import { InputPaginator, OutputPaginator } from "../../Paginator/Paginator";
@@ -6,11 +6,13 @@ import { ServiceExecutionResultStatus } from "../../Common/Services/Types/Servic
 import { CreateUserDto } from "./UsersRepo/Dtos/CreateUserDto";
 import { AuthService } from "../Auth/auth.service";
 import { ValidationPipe } from "../../Pipes/validation.pipe";
+import { AdminGuard } from "../../Auth/Guards/admin.guard";
 
 @Controller('users')
+@UseGuards(AdminGuard)
 export class UserController {
-    constructor(private authService: AuthService) {}
-    
+    constructor(private authService: AuthService) { }
+
     @Get()
     async GetUsers(
         @Query('searchLoginTerm') loginTerm: string | undefined,
@@ -42,7 +44,7 @@ export class UserController {
     @Post()
     @HttpCode(HttpStatus.CREATED)
     async SaveUser(@Body(new ValidationPipe()) user: CreateUserDto) {
-        
+
         let saveUser = await this.authService.Registration(user, true);
 
         switch (saveUser.executionStatus) {
