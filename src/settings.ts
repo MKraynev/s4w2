@@ -9,5 +9,5 @@ export const ACCESS_TOKEN_EXPIRE = process.env.ACCESS_TOKEN_EXPIRE || "5m"
 export const MAIL_LOGIN = process.env.GMAIL_LOGIN;
 export const MAIL_PASSWORD = process.env.GMAIL_PASSWORD;
 
-export const CONFIRM_REGISTRATION_URL = process.env.REGISTRATION_URL || "localhost:5001/auth/registration-confirmation"
-export const REFRESH_PASSWORD_URL = process.env.REGISTRATION_URL || "localhost:5001/auth/new-password"
+export const CONFIRM_REGISTRATION_URL = process.env.REGISTRATION_CONFIRM_URL || "localhost:5001/auth/registration-confirmation"
+export const REFRESH_PASSWORD_URL = process.env.REFRESH_PASSWORD_URL || "localhost:5001/auth/new-password"
