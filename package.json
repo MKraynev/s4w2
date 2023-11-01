@@ -34,6 +34,8 @@
     "@types/nodemailer": "^6.4.13",
     "@types/passport-jwt": "^3.0.12",
     "bcrypt": "^5.1.1",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.0",
     "dotenv": "^16.3.1",
     "mongoose": "^7.6.3",
     "nodemailer": "^6.9.7",

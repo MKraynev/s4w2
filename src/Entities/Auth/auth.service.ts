@@ -49,7 +49,7 @@ export class AuthService {
     }
 
     public async Login(emailOrLogin: string, password: string): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, { accessToken: string }>> {
-        let foundUser = await this.userService.TakeByLoginOrEmail("createdAt", "desc", emailOrLogin, emailOrLogin);
+        let foundUser = await this.userService.TakeByLoginOrEmail("createdAt", "desc", emailOrLogin, emailOrLogin, 0, 1);
 
         if (foundUser.executionResultObject.count !== 1)
             return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound)

@@ -3,6 +3,8 @@ import { AuthService } from "./auth.service";
 import { CreateUserDto } from "../Users/UsersRepo/Dtos/CreateUserDto";
 import { ServiceExecutionResultStatus } from "../../Common/Services/Types/ServiceExecutionStatus";
 import { JwtAuthGuard } from "../../Auth/Guards/jwt-auth.guard";
+import { LoginDto } from "./Dto/auth.loginDto";
+import { ValidationPipe } from "../../Pipes/validation.pipe";
 
 
 
@@ -16,8 +18,8 @@ export class AuthController {
 
     //post -> /hometask_14/api/auth/login
     @Post('login')
-    async Login(@Body() userDto: { login: string, password: string }) {
-        let login = await this.authServise.Login(userDto.login, userDto.password)
+    async Login(@Body(new ValidationPipe()) userDto: LoginDto) {
+        let login = await this.authServise.Login(userDto.loginOrEmail, userDto.password)
 
         return login.executionResultObject;
     }
