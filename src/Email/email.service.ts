@@ -26,11 +26,26 @@ export class EmailService {
         return err && console.log("SEND EMAIL ERROR", err)
     }
 
-    _CONFIRM_EMAIL_FORM(sendTo: string, confirmCode: string, registrationPath): Mail {
+    _CONFIRM_EMAIL_FORM(sendTo: string, confirmCode: string, registrationPath: string): Mail {
         let result: Mail = {
             to: sendTo,
             from: `"SAMURAI 🥷"<${this.login}@gmail.com>`,
             subject: "Confirm email",
+            text: "",
+            html: `
+            <p>To finish registration please follow the link below:
+            <a href='${registrationPath}?code=${confirmCode}'>complete registration</a>
+            </p>`
+        }
+
+        return result;
+    }
+
+    _PASSWORD_RECOVERY_FORM(sendTo: string, confirmCode: string, registrationPath: string): Mail {
+        let result: Mail = {
+            to: sendTo,
+            from: `"SAMURAI 🥷"<${this.login}@gmail.com>`,
+            subject: "Recovery password",
             text: "",
             html: `
             <p>To finish registration please follow the link below:

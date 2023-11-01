@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { CrudService, TakeResult } from "../../Common/Services/crudService";
+
 import { UserDocument, UserDto } from "./UsersRepo/Schema/user.schema";
 import { UsersRepoService } from "./UsersRepo/usersRepo.service";
 import { ServiceExecutionResult } from "../../Common/Services/Types/ServiseExecutionResult";
@@ -19,8 +20,9 @@ export class UserService extends CrudService<UserDto, UserDto, UserDocument, Use
         loginValue?: string,
         emailValue?: string,
         skip: number = 0,
-        limit: number = 10)
-        : Promise<ServiceExecutionResult<ServiceExecutionResultStatus, TakeResult<ServiceDto<UserDto>>>> {
+        limit: number = 10,
+        format: boolean = true)
+        : Promise<ServiceExecutionResult<ServiceExecutionResultStatus, TakeResult<UserDocument| ServiceDto<UserDto>>>> {
 
         let loginFindUnit: MongooseFindUnit<UserDto> = loginValue ? { field: "login", value: loginValue } : undefined;
         let emailFindUnit: MongooseFindUnit<UserDto> = emailValue ? { field: "email", value: emailValue } : undefined;
@@ -28,12 +30,17 @@ export class UserService extends CrudService<UserDto, UserDto, UserDocument, Use
         let findPattern = new MongooseRepoFindPattern_OR(loginFindUnit, emailFindUnit);
 
         let countUsers = await this.usersRepo.CountByPattern(findPattern);
-        let foundUsers = await this.usersRepo.FindByPatterns(findPattern, sortBy, sortDirection, skip, limit);
-        let formatedUsers = foundUsers.map(dbUser => this.RemoveAccessInfo(dbUser)) as ServiceDto<UserDto>[];
+        let foundUsers = await this.usersRepo.FindByPatterns(findPattern, sortBy, sortDirection, skip, limit) as UserDocument[];
+        let result: Array<ServiceDto<UserDto> | UserDocument> = foundUsers;
 
-        return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, { count: countUsers, items: formatedUsers });
+        if (format) {
+            result = foundUsers.map(dbUser => this.RemoveAccessInfo(dbUser)) as ServiceDto<UserDto>[];
+        }
+
+
+        return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, { count: countUsers, items: result });
     }
-    
+
     private RemoveAccessInfo(dbUser: UserDocument): ServiceDto<UserDto> {
         //Remove hash etc
         let user = dbUser.toObject() as ServiceDto<UserDto>;

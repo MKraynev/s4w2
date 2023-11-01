@@ -1,3 +1,3 @@
-export type LoadToken_Access = {
+export type TokenLoad_Access = {
     id: string
 }

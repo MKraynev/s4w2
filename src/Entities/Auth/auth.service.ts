@@ -4,12 +4,13 @@ import { ServiceExecutionResultStatus } from "../../Common/Services/Types/Servic
 import { ServiceExecutionResult } from "../../Common/Services/Types/ServiseExecutionResult";
 import { EmailService } from "../../Email/email.service";
 import { CreateUserDto } from "../Users/UsersRepo/Dtos/CreateUserDto";
-import { UserDto } from "../Users/UsersRepo/Schema/user.schema";
+import { UserDocument, UserDto } from "../Users/UsersRepo/Schema/user.schema";
 import { UserService } from "../Users/users.service";
 import { Injectable } from "@nestjs/common";
 import bcrypt from "bcrypt"
-import { REGISTRATION_URL } from "../../settings";
-import { LoadToken_confirmEmail } from "../../Auth/Tokens/tokenLoad.confirmEmail";
+import { CONFIRM_REGISTRATION_URL, REFRESH_PASSWORD_URL } from "../../settings";
+import { TokenLoad_confirmEmail } from "../../Auth/Tokens/tokenLoad.confirmEmail";
+import { TokenLoad_PasswordRecovery } from "../../Auth/Tokens/tokenLoad.passwordRecovery";
 
 @Injectable()
 export class AuthService {
@@ -37,12 +38,12 @@ export class AuthService {
 
         let user = saveUser.executionResultObject;
 
-        let tokenLoad: LoadToken_confirmEmail = { id: user.id }
+        let tokenLoad: TokenLoad_confirmEmail = { id: user.id }
         let token = await this.jwtService.signAsync(tokenLoad);
 
         if (!confirmed)
             this.emailService.SendEmail(
-                this.emailService._CONFIRM_EMAIL_FORM(user.email, token, REGISTRATION_URL)
+                this.emailService._CONFIRM_EMAIL_FORM(user.email, token, CONFIRM_REGISTRATION_URL)
             );
 
         return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, this.DeletePriveInfo(user));
@@ -61,7 +62,7 @@ export class AuthService {
     }
 
     public async ConfrimEmail(token: string): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, ServiceDto<UserDto>>> {
-        let tokenLoad: LoadToken_confirmEmail = await this.jwtService.verifyAsync(token);
+        let tokenLoad: TokenLoad_confirmEmail = await this.jwtService.verifyAsync(token);
 
         let findUser = await this.userService.TakeByIdDocument(tokenLoad.id);
         let userDocument = findUser.executionResultObject;
@@ -77,6 +78,55 @@ export class AuthService {
         let updatedUser = (await this.userService.UpdateDocument(userDocument)).executionResultObject;
 
         return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, updatedUser)
+    }
+
+    public async RestorePasswordBegin(userEmail: string): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, undefined>> {
+        let findUser = await this.userService.TakeByLoginOrEmail("createdAt", "desc", undefined, userEmail, 0, 1, false);
+        if (findUser.executionResultObject.items.length === 0)
+            return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound)
+
+        let user = findUser.executionResultObject.items[0] as UserDocument;
+
+        let refreshPasswordTime = new Date().toISOString();
+        user.refreshPasswordTime = refreshPasswordTime;
+
+        this.userService.UpdateDocument(user);
+
+        let tokenLoad: TokenLoad_PasswordRecovery = { id: user.id, recoveryTime: user.refreshPasswordTime }
+        let token = await this.jwtService.signAsync(tokenLoad)
+
+        this.emailService.SendEmail(this.emailService._PASSWORD_RECOVERY_FORM(user.email, token, REFRESH_PASSWORD_URL))
+
+        return new ServiceExecutionResult(ServiceExecutionResultStatus.Success);
+    }
+
+    public async RestorePasswordEnd(newPassword: string, token: string): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, ServiceDto<UserDto>>> {
+        let tokenLoad: TokenLoad_PasswordRecovery = await this.jwtService.verifyAsync(token);
+        let findUser = await this.userService.TakeByIdDocument(tokenLoad.id);
+
+        if (findUser.executionStatus === ServiceExecutionResultStatus.NotFound)
+            return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound)
+
+        let user = findUser.executionResultObject;
+
+        if (user.refreshPasswordTime !== tokenLoad.recoveryTime)
+            return new ServiceExecutionResult(ServiceExecutionResultStatus.NotRelevantCode)
+
+        let newHash = await bcrypt.hash(newPassword, user.salt);
+
+        if (newHash === user.hash)
+            return new ServiceExecutionResult(ServiceExecutionResultStatus.WrongPassword)
+
+        let salt = await bcrypt.genSalt(10);
+        newHash = await bcrypt.hash(newPassword, salt);
+
+        user.salt = salt;
+        user.hash = newHash;
+        user.refreshPasswordTime = undefined;
+
+        let saveUser = await this.userService.UpdateDocument(user);
+
+        return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, saveUser.executionResultObject);
     }
 
     private DeletePriveInfo(userDto: ServiceDto<UserDto>) {

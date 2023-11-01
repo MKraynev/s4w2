@@ -1,3 +1,3 @@
-export type LoadToken_confirmEmail = {
+export type TokenLoad_confirmEmail = {
     id: string
 }
