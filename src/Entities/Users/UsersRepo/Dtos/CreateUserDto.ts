@@ -1,7 +1,14 @@
+import { IsEmail, MaxLength, MinLength } from "class-validator";
+
 export class CreateUserDto {
-    constructor(
-        public login: string,
-        public email: string,
-        public password: string
-    ) { }
+    @MinLength(3)
+    @MaxLength(10)
+    public login: string;
+
+    @IsEmail()
+    public email: string;
+
+    @MinLength(6)
+    @MaxLength(20)
+    public password: string;
 }

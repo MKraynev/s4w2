@@ -23,7 +23,7 @@ export class UserController {
         switch (findUsers.executionStatus) {
             case ServiceExecutionResultStatus.Success:
                 let users = findUsers.executionResultObject.items.map(user => {
-                    let { updatedAt, ...rest } = user;
+                    let { updatedAt, emailConfirmed, hash, salt, refreshPasswordTime, ...rest } = user;
                     return rest;
                 })
                 let count = findUsers.executionResultObject.count;
@@ -49,8 +49,8 @@ export class UserController {
 
         switch (saveUser.executionStatus) {
             case ServiceExecutionResultStatus.Success:
-                let { updatedAt, ...user } = saveUser.executionResultObject;
-                return user;
+                let { updatedAt, emailConfirmed, hash, salt, refreshPasswordTime, ...rest } = saveUser.executionResultObject;
+                return rest;
                 break;
 
             default:
