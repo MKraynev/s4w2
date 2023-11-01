@@ -5,6 +5,7 @@ import { InputPaginator, OutputPaginator } from "../../Paginator/Paginator";
 import { ServiceExecutionResultStatus } from "../../Common/Services/Types/ServiceExecutionStatus";
 import { CreateUserDto } from "./UsersRepo/Dtos/CreateUserDto";
 import { AuthService } from "../Auth/auth.service";
+import { ValidationPipe } from "../../Pipes/validation.pipe";
 
 @Controller('users')
 export class UserController {
@@ -40,10 +41,7 @@ export class UserController {
 
     @Post()
     @HttpCode(HttpStatus.CREATED)
-    async SaveUser(
-        @Body() user: CreateUserDto,
-        @Body('password') password: string
-    ) {
+    async SaveUser(@Body(new ValidationPipe()) user: CreateUserDto) {
         
         let saveUser = await this.authService.Registration(user, true);
 
