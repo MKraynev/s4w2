@@ -56,10 +56,21 @@ export class AuthController {
 
     //post -> /hometask_14/api/auth/login
     @Post('login')
+    @HttpCode(HttpStatus.OK)
     async Login(@Body(new ValidationPipe()) userDto: LoginDto) {
         let login = await this.authServise.Login(userDto.loginOrEmail, userDto.password)
 
-        return login.executionResultObject;
+        switch (login.executionStatus) {
+            case ServiceExecutionResultStatus.Success:
+                return login.executionResultObject;
+                break;
+
+            default:
+            case ServiceExecutionResultStatus.NotFound:
+                throw new BadRequestException();
+                break;
+        }
+
     }
 
 
