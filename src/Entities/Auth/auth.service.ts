@@ -27,7 +27,9 @@ export class AuthService {
 
         let user = saveUser.executionResultObject;
 
-        this.emailService.SendEmail(user.email, EmailService._REGISTRATION_FORM(user.id));
+        this.emailService.SendEmail(
+            this.emailService._REGISTRATION_FORM(user.email, user.id, "localhost:5001/auth/login")
+        );
 
         return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, this.DeletePriveInfo(user));
     }
