@@ -6,7 +6,7 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 
 @Injectable()
-export class UsersRepoService extends MongooseRepo<UserDto, CreateUserDto, UserDocument>{
+export class UsersRepoService extends MongooseRepo<UserDto, UserDto, UserDocument>{
     constructor(@InjectModel(UserDto.name) private userModel: Model<UserDto>) {
         super(userModel);
     }

@@ -125,7 +125,7 @@ export class BlogController {
   //get -> hometask_13/api/blogs/{id}
   @Get(":id")
   async GetBlogById(@Param('id') id: string) {
-    let findBlog = await this.blogService.TakeById(id);
+    let findBlog = await this.blogService.TakeByIdDto(id);
     switch (findBlog.executionStatus) {
       case ServiceExecutionResultStatus.Success:
         let blog = new ControllerBlogDto(findBlog.executionResultObject);
@@ -145,7 +145,7 @@ export class BlogController {
   async UpdateBlog(
     @Param('id') id: string,
     @Body() blogData: UpdateBlogDto) {
-    let updateBlog = await this.blogService.Update(id, blogData);
+    let updateBlog = await this.blogService.UpdateDto(id, blogData);
 
     switch (updateBlog.executionStatus) {
       case ServiceExecutionResultStatus.Success:

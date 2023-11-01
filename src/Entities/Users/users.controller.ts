@@ -2,14 +2,13 @@ import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatu
 import { UserDto } from "./UsersRepo/Schema/user.schema";
 import { QueryPaginator } from "../../Common/Routes/QueryParams/PaginatorQueryParams";
 import { InputPaginator, OutputPaginator } from "../../Paginator/Paginator";
-import { UserService } from "./users.service";
-import { find } from "rxjs";
 import { ServiceExecutionResultStatus } from "../../Common/Services/Types/ServiceExecutionStatus";
 import { CreateUserDto } from "./UsersRepo/Dtos/CreateUserDto";
+import { AuthService } from "../Auth/auth.service";
 
 @Controller('users')
 export class UserController {
-    constructor(private userService: UserService) {}
+    constructor(private authService: AuthService) {}
     
     @Get()
     async GetUsers(
@@ -19,7 +18,7 @@ export class UserController {
         @Query('sortDirection') sortDirecrion: "desc" | "asc" = "desc",
         @QueryPaginator() paginator: InputPaginator
     ) {
-        let findUsers = await this.userService.TakeByLoginOrEmail(sortBy, sortDirecrion, loginTerm, emailTerm, paginator.skipElements, paginator.pageSize);
+        let findUsers = await this.authService.userService.TakeByLoginOrEmail(sortBy, sortDirecrion, loginTerm, emailTerm, paginator.skipElements, paginator.pageSize);
 
         switch (findUsers.executionStatus) {
             case ServiceExecutionResultStatus.Success:
@@ -45,7 +44,8 @@ export class UserController {
         @Body() user: CreateUserDto,
         @Body('password') password: string
     ) {
-        let saveUser = await this.userService.Save(user);
+        
+        let saveUser = await this.authService.Registration(user, true);
 
         switch (saveUser.executionStatus) {
             case ServiceExecutionResultStatus.Success:
@@ -62,7 +62,7 @@ export class UserController {
     @Delete(":id")
     @HttpCode(HttpStatus.NO_CONTENT)
     async DeleteUser(@Param('id') id: string) {
-        let deleteUser = await this.userService.Delete(id);
+        let deleteUser = await this.authService.userService.Delete(id);
 
         switch (deleteUser.executionStatus) {
             case ServiceExecutionResultStatus.Success:

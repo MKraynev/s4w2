@@ -7,10 +7,12 @@ import { ACCESS_TOKEN_EXPIRE, JWT_SECRET } from "../../settings";
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 import { JwtStrategy } from "../../Auth/Strategies/jwt.strategy";
+import { UsersRepoModule } from "../Users/UsersRepo/usersRepo.module";
+import { UserService } from "../Users/users.service";
 
 @Module({
   imports: [
-    UsersModule,
+    UsersRepoModule,
     PassportModule,
     EmailModule,
     JwtModule.register({
@@ -19,7 +21,7 @@ import { JwtStrategy } from "../../Auth/Strategies/jwt.strategy";
     }),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JwtStrategy],
+  providers: [AuthService, JwtStrategy, UserService],
   exports: [AuthService],
 })
 export class AuthModule {}

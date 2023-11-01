@@ -42,7 +42,7 @@ export class PostController {
     //get -> /hometask_13/api/posts/{id}
     @Get(":id")
     async GetPostById(@Param('id') id: string) {
-        let findPost = await this.postService.TakeById(id);
+        let findPost = await this.postService.TakeByIdDto(id);
 
         switch (findPost.executionStatus) {
             case ServiceExecutionResultStatus.Success:
@@ -99,7 +99,7 @@ export class PostController {
         @Param("id") id: string,
         @Body() postData: CreatePostDto
     ) {
-        let updatePost = await this.postService.Update(id, postData);
+        let updatePost = await this.postService.UpdateDto(id, postData);
 
         switch (updatePost.executionStatus) {
             case ServiceExecutionResultStatus.Success:

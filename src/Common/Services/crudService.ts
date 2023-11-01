@@ -34,23 +34,35 @@ export class CrudService<
         return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, result)
     }
 
-    public async TakeById(id: string): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, ServiceDto<EntityType>>> {
+    public async TakeByIdDto(id: string): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, ServiceDto<EntityDocument>>> {
+        let findDocument = await this.TakeByIdDocument(id);
+
+        return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, findDocument.executionResultObject.toObject()) 
+    }
+
+    public async TakeByIdDocument(id: string): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, EntityDocument>>{
         let item = await this.repo.FindById(id);
         if (item)
-            return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, item.toObject())
+            return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, item)
 
         return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound)
     }
 
-    public async Update(id: string, newEntityData: CreateAndUpdateEntityDto): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, ServiceDto<EntityType>>> {
-        let blog = await this.repo.FindById(id);
+    public async UpdateDto(id: string, dto: CreateAndUpdateEntityDto): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, ServiceDto<EntityType>>>{
+        let findDocument = await this.repo.FindById(id);
+            if(!findDocument){
+                return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound)
+            }
+        
+        Object.assign(findDocument, dto);
 
-        if (!blog)
-            return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound);
+        let updatedObject = (await this.repo.Update(findDocument)).toObject() as ServiceDto<EntityType>;
 
-        Object.assign(blog, newEntityData);
+        return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, updatedObject);
+    }
 
-        let savedBlog = await this.repo.Save(blog);
+    public async UpdateDocument(updatedObject: EntityDocument): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, ServiceDto<EntityType>>> {
+        let savedBlog = await this.repo.SaveDocument(updatedObject);
         return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, savedBlog.toObject())
     }
 
@@ -64,7 +76,7 @@ export class CrudService<
     }
 
     public async Save(entity: CreateAndUpdateEntityDto): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, ServiceDto<EntityType>>> {
-        let savedEntity = await this.repo.Save(entity);
+        let savedEntity = await this.repo.SaveDto(entity);
 
         return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, savedEntity.toObject())
     }

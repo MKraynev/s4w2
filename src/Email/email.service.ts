@@ -26,15 +26,15 @@ export class EmailService {
         return err && console.log("SEND EMAIL ERROR", err)
     }
 
-    _REGISTRATION_FORM(sendTo: string, userId: string, registrationPath): Mail {
+    _CONFIRM_EMAIL_FORM(sendTo: string, confirmCode: string, registrationPath): Mail {
         let result: Mail = {
             to: sendTo,
             from: `"SAMURAI 🥷"<${this.login}@gmail.com>`,
-            subject: "Testing email registration",
+            subject: "Confirm email",
             text: "",
             html: `
             <p>To finish registration please follow the link below:
-            <a href='${registrationPath}?code=${userId}'>complete registration</a>
+            <a href='${registrationPath}?code=${confirmCode}'>complete registration</a>
             </p>`
         }
 

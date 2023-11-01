@@ -14,16 +14,36 @@ export type UserDocument = HydratedDocument<UserDto>
         }
     }
 })
-export class UserDto extends CreateUserDto {
+export class UserDto {
     @Prop({ required: true })
     login: string;
 
     @Prop({ required: true })
     email: string;
 
+    @Prop({ required: true })
+    salt: string;
+
+    @Prop({ required: true })
+    hash: string;
+
+    @Prop({default: false})
+    emailConfirmed: boolean;
+
+    @Prop()
+    refreshPasswordTime: string
+
     createdAt: Date;
 
     updatedAt: Date;
+
+    constructor(createDto: CreateUserDto, salt: string, hash: string, confirmed: boolean = false) {
+        this.login = createDto.login;
+        this.email = createDto.email;
+        this.salt = salt;
+        this.hash = hash;
+        this.emailConfirmed = confirmed;
+    }
 }
 
 export const UserSchema = SchemaFactory.createForClass(UserDto);

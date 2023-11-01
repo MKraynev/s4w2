@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards, Request } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards, Request, Query } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { CreateUserDto } from "../Users/UsersRepo/Dtos/CreateUserDto";
 import { ServiceExecutionResultStatus } from "../../Common/Services/Types/ServiceExecutionStatus";
@@ -16,14 +16,32 @@ export class AuthController {
 
     //post -> /hometask_14/api/auth/login
     @Post('login')
-    async Login(@Body() userDto: {login: string, password: string}){
+    async Login(@Body() userDto: { login: string, password: string }) {
         let login = await this.authServise.Login(userDto.login, userDto.password)
 
         return login.executionResultObject;
     }
+
+
     //post -> /hometask_14/api/auth/refresh-token
 
     //post -> /hometask_14/api/auth/registration-confirmation
+    @Post('registration-confirmation')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async ConfrimEmail(@Query('code') code: string) {
+        let confirmEmail = await this.authServise.ConfrimEmail(code);
+
+        switch (confirmEmail.executionStatus) {
+            case ServiceExecutionResultStatus.Success:
+                return;
+
+            default:
+            case ServiceExecutionResultStatus.UserAlreadyExist:
+                throw new BadRequestException();
+                break;
+        }
+    }
+
 
     //post -> /hometask_14/api/auth/registration
     @Post('registration')
@@ -45,7 +63,7 @@ export class AuthController {
 
     @Get()
     @UseGuards(JwtAuthGuard)
-    async GetDemo(@Request() req){
+    async GetDemo(@Request() req) {
         return req.user;
     }
 

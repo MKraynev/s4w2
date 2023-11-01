@@ -8,3 +8,4 @@ export const ACCESS_TOKEN_EXPIRE = process.env.ACCESS_TOKEN_EXPIRE || "5m"
 
 export const MAIL_LOGIN = process.env.GMAIL_LOGIN;
 export const MAIL_PASSWORD = process.env.GMAIL_PASSWORD;
+export const REGISTRATION_URL = process.env.REGISTRATION_URL || "localhost:5001/auth/registration-confirmation"

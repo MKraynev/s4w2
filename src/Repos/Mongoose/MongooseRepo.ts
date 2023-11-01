@@ -4,9 +4,13 @@ import { MongooseRepoFindPattern_OR } from "./Searcher/MongooseRepoFindPattern";
 export class MongooseRepo<ModelType, CreateDTO, EntityDocument extends HydratedDocument<ModelType>>{
   constructor(private model: Model<ModelType>) { }
 
-  async Save(createDTO: CreateDTO | ModelType): Promise<EntityDocument> {
+  async SaveDto(createDTO: CreateDTO): Promise<EntityDocument> {
     const createEntity = await this.model.create(createDTO);
     return (await createEntity.save() as EntityDocument);
+  }
+
+  async SaveDocument(document: EntityDocument){
+    return await document.save() as EntityDocument
   }
 
   async FindById(id: string): Promise<EntityDocument | null> {
@@ -46,8 +50,8 @@ export class MongooseRepo<ModelType, CreateDTO, EntityDocument extends HydratedD
     }
   }
 
-  async Update(document: EntityDocument) {
-    return (await document.save());
+  async Update(document: EntityDocument): Promise<EntityDocument> {
+    return (await document.save() as EntityDocument);
   }
 
   async DeleteById(id: string): Promise<EntityDocument> | null {

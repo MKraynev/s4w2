@@ -25,7 +25,7 @@ export class PostService extends CrudService<CreatePostDto, PostDto, PostDocumen
             return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound);
 
         let post = new PostDto(postData.title, postData.shortDescription, postData.content, blogId, blog.name);
-        let savePost = await this.postRepo.Save(post);
+        let savePost = await this.postRepo.SaveDto(post);
 
         return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, savePost.toObject());
     }

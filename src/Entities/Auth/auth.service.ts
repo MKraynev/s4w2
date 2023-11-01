@@ -7,29 +7,43 @@ import { CreateUserDto } from "../Users/UsersRepo/Dtos/CreateUserDto";
 import { UserDto } from "../Users/UsersRepo/Schema/user.schema";
 import { UserService } from "../Users/users.service";
 import { Injectable } from "@nestjs/common";
+import bcrypt from "bcrypt"
+import { REGISTRATION_URL } from "../../settings";
+import { LoadToken_confirmEmail } from "../../Auth/Tokens/tokenLoad.confirmEmail";
 
 @Injectable()
 export class AuthService {
     constructor(
-        private userService: UserService,
+        public userService: UserService,
         private emailService: EmailService,
         private jwtService: JwtService
     ) { }
 
-    public async Registration(userDto: CreateUserDto): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, ServiceDto<UserDto>>> {
+    public async Registration(userDto: CreateUserDto, confirmed: boolean = false): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, ServiceDto<UserDto>>> {
+        //1) stop if user exist
         let findUser = await this.userService.TakeByLoginOrEmail("createdAt", "desc", userDto.login, userDto.email);
         if (findUser.executionResultObject.items.length !== 0)
             return new ServiceExecutionResult(ServiceExecutionResultStatus.UserAlreadyExist);
 
-        let saveUser = await this.userService.Save(userDto);
+        //2) Generate salt/hash
+        let salt = await bcrypt.genSalt(10);
+        let hash = await bcrypt.hash(userDto.password, salt);
+
+        let newUser = new UserDto(userDto, salt, hash);
+
+        let saveUser = await this.userService.Save(newUser);
         if (saveUser.executionStatus !== ServiceExecutionResultStatus.Success || !saveUser.executionResultObject)
             return new ServiceExecutionResult(ServiceExecutionResultStatus.DataBaseFailed);
 
         let user = saveUser.executionResultObject;
 
-        this.emailService.SendEmail(
-            this.emailService._REGISTRATION_FORM(user.email, user.id, "localhost:5001/auth/login")
-        );
+        let tokenLoad: LoadToken_confirmEmail = { id: user.id }
+        let token = await this.jwtService.signAsync(tokenLoad);
+
+        if (!confirmed)
+            this.emailService.SendEmail(
+                this.emailService._CONFIRM_EMAIL_FORM(user.email, token, REGISTRATION_URL)
+            );
 
         return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, this.DeletePriveInfo(user));
     }
@@ -46,9 +60,30 @@ export class AuthService {
         return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, token)
     }
 
+    public async ConfrimEmail(token: string): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, ServiceDto<UserDto>>> {
+        let tokenLoad: LoadToken_confirmEmail = await this.jwtService.verifyAsync(token);
+
+        let findUser = await this.userService.TakeByIdDocument(tokenLoad.id);
+        let userDocument = findUser.executionResultObject;
+
+        if (findUser.executionStatus !== ServiceExecutionResultStatus.Success || !findUser.executionResultObject)
+            return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound)
+
+        if (userDocument.emailConfirmed)
+            return new ServiceExecutionResult(ServiceExecutionResultStatus.UserAlreadyExist);
+
+        userDocument.emailConfirmed = true;
+
+        let updatedUser = (await this.userService.UpdateDocument(userDocument)).executionResultObject;
+
+        return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, updatedUser)
+    }
+
     private DeletePriveInfo(userDto: ServiceDto<UserDto>) {
         let { ...rest } = userDto;
 
         return rest;
     }
+
+
 }
