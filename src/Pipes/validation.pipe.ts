@@ -9,17 +9,39 @@ export class ValidationPipe implements PipeTransform<any> {
       return value;
     }
 
-    const object = plainToInstance(metatype, value);
+    let object = plainToInstance(metatype, value);
+    object = this.trim(object);
+
     const errors = await validate(object);
     if (errors.length > 0) {
       throw new BadRequestException('Validation failed');
     }
 
-    return value;
+    
+    return object;
   }
 
   private toValidate(metatype: Function): boolean {
     const types: Function[] = [String, Boolean, Number, Array, Object];
     return !types.includes(metatype);
+  }
+
+  private trim(values) {
+    Object.keys(values).forEach(key => {
+      if (key !== 'password') {
+        if (this.isObj(values[key])) {
+          values[key] = this.trim(values[key])
+        } else {
+          if (typeof values[key] === 'string') {
+            values[key] = values[key].trim()
+          }
+        }
+      }
+    })
+    return values
+  }
+
+  private isObj(obj: any): boolean {
+    return typeof obj === 'object' && obj !== null
   }
 }

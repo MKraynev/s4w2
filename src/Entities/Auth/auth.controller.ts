@@ -90,7 +90,7 @@ export class AuthController {
     @Post('registration')
     @HttpCode(HttpStatus.NO_CONTENT)
     async Registratior(
-        @Body() userDto: CreateUserDto
+        @Body(new ValidationPipe()) userDto: CreateUserDto
     ) {
         let saveUser = await this.authServise.Registration(userDto);
 
