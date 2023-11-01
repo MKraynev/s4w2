@@ -5,6 +5,7 @@ import { BlogsModule } from './Entities/Blogs/blogs.module';
 import { TestModule } from './Common/Routes/testing-all-Data/testing.module';
 import { PostsModule } from './Entities/Posts/posts.module';
 import { UsersModule } from './Entities/Users/users.module';
+import { AuthModule } from './Entities/Auth/auth.module';
 
 
 @Module({
@@ -13,7 +14,8 @@ import { UsersModule } from './Entities/Users/users.module';
     BlogsModule,
     PostsModule,
     UsersModule,
-    TestModule],
+    TestModule,
+    AuthModule],
   controllers: [],
   providers: [],
 })
