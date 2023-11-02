@@ -91,7 +91,7 @@ export class AuthController {
             default:
             case ServiceExecutionResultStatus.NotFound:
             case ServiceExecutionResultStatus.EmailAlreadyExist:
-                throw new BadRequestException({ errorsMessages: [{ message: "Wrong email", field: "email" }] })
+                throw new BadRequestException({ errorsMessages: [{ message: "Wrong code", field: "code" }] })
                 break;
         }
     }

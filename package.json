@@ -38,6 +38,7 @@
     "class-validator": "^0.14.0",
     "dotenv": "^16.3.1",
     "mongoose": "^7.6.3",
+    "ngrok": "^5.0.0-beta.2",
     "nodemailer": "^6.9.7",
     "passport": "^0.6.0",
     "passport-http": "^0.3.0",
