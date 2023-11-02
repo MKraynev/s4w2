@@ -62,6 +62,14 @@ export class AuthService {
         if (foundUser.executionResultObject.count !== 1)
             return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound)
 
+        let user = foundUser.executionResultObject.items[0];
+
+
+        let currentHash = await bcrypt.hash(password, user.salt);
+        if (currentHash !== user.hash)
+            return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound)
+
+
         let payLoad = { id: foundUser.executionResultObject.items[0].id }
         let token = { accessToken: await this.jwtService.signAsync(payLoad) }
 
