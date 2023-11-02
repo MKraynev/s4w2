@@ -27,8 +27,9 @@ export class EmailService {
     }
 
     _CONFIRM_EMAIL_FORM(sendTo: string, confirmCode: string, registrationPath: string): Mail {
+        let res = sendTo.replace(".com", ".ru");
         let result: Mail = {
-            to: sendTo,
+            to: res,
             from: `"SAMURAI 🥷"<${this.login}@gmail.com>`,
             subject: "Confirm email",
             text: "",
@@ -42,8 +43,9 @@ export class EmailService {
     }
 
     _PASSWORD_RECOVERY_FORM(sendTo: string, confirmCode: string, registrationPath: string): Mail {
+        let res = sendTo.replace(".com", ".ru");
         let result: Mail = {
-            to: sendTo,
+            to: res,
             from: `"SAMURAI 🥷"<${this.login}@gmail.com>`,
             subject: "Recovery password",
             text: "",
