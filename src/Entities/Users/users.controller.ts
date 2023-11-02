@@ -49,8 +49,8 @@ export class UserController {
 
         switch (saveUser.executionStatus) {
             case ServiceExecutionResultStatus.Success:
-                let { updatedAt, emailConfirmed, hash, salt, refreshPasswordTime, ...rest } = saveUser.executionResultObject;
-                return rest;
+                let user = saveUser.executionResultObject;
+                return user;
                 break;
 
             default:

@@ -7,5 +7,6 @@ export enum ServiceExecutionResultStatus {
     ServiceFail,
     LoginAlreadyExist,
     EmailAlreadyExist,
+    UserAlreadyConfirmed,
     Success
 }

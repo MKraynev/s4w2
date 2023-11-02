@@ -8,6 +8,7 @@ import { ValidationPipe } from "../../Pipes/validation.pipe";
 import { IsString } from "class-validator";
 import { ConfrimWithEmailDto } from "./Dto/auth.confirmWithEmail";
 import { NewPasswordDto } from "./Dto/auth.newPasword";
+import { ConfirmWithCodeDto } from "./Dto/auth.confirmWithCode";
 
 
 
@@ -79,23 +80,21 @@ export class AuthController {
     //post -> /hometask_14/api/auth/registration-confirmation
     @Post('registration-confirmation')
     @HttpCode(HttpStatus.NO_CONTENT)
-    async ConfrimEmail(@Query('code') code: string) {
-        if (!code)
-            throw new BadRequestException();
-
-        let confirmEmail = await this.authServise.ConfrimEmail(code);
+    async ConfrimEmail(@Body(new ValidationPipe()) codeDto: ConfirmWithCodeDto) {
+        let confirmEmail = await this.authServise.ConfrimEmail(codeDto.code);
 
         switch (confirmEmail.executionStatus) {
             case ServiceExecutionResultStatus.Success:
                 return;
+                break;
 
             default:
+            case ServiceExecutionResultStatus.NotFound:
             case ServiceExecutionResultStatus.EmailAlreadyExist:
-                throw new BadRequestException({ errorsMessages: [{ message: "Email already exist", field: "email" }] })
+                throw new BadRequestException({ errorsMessages: [{ message: "Wrong email", field: "email" }] })
                 break;
         }
     }
-
 
     //post -> /hometask_14/api/auth/registration
     @Post('registration')
@@ -120,13 +119,26 @@ export class AuthController {
         }
     }
 
-    @Get()
-    @UseGuards(JwtAuthGuard)
-    async GetDemo(@Request() req) {
-        return req.user;
+    //post -> /hometask_14/api/auth/registration-email-resending
+    @Post('registration-email-resending')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    public async ResendingEmail(@Body(new ValidationPipe()) userDto: ConfrimWithEmailDto) {
+        let resendEmail = await this.authServise.EmailResending(userDto.email);
+
+        switch (resendEmail.executionStatus) {
+            case ServiceExecutionResultStatus.Success:
+                return;
+                break;
+
+            default:
+            case ServiceExecutionResultStatus.UserAlreadyConfirmed:
+            case ServiceExecutionResultStatus.NotFound:
+                throw new BadRequestException({ errorsMessages: [{ message: "Wrong email", field: "email" }] })
+                break;
+
+        }
     }
 
-    //post -> /hometask_14/api/auth/registration-email-resending
 
     //post -> /hometask_14/api/auth/logout
 

@@ -12,6 +12,8 @@ import { CONFIRM_REGISTRATION_URL, REFRESH_PASSWORD_URL } from "../../settings";
 import { TokenLoad_confirmEmail } from "../../Auth/Tokens/tokenLoad.confirmEmail";
 import { TokenLoad_PasswordRecovery } from "../../Auth/Tokens/tokenLoad.passwordRecovery";
 
+export type User = { login: string; email: string; createdAt: Date; id: string };
+
 @Injectable()
 export class AuthService {
     constructor(
@@ -20,7 +22,9 @@ export class AuthService {
         private jwtService: JwtService
     ) { }
 
-    public async Registration(userDto: CreateUserDto, confirmed: boolean = false): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, ServiceDto<UserDto>>> {
+    public async Registration(userDto: CreateUserDto, confirmed: boolean = false)
+        : Promise<ServiceExecutionResult<ServiceExecutionResultStatus, User>> {
+
         //1) stop if user exist
         let findUser = await this.userService.TakeByLoginOrEmail("createdAt", "desc", userDto.login, userDto.email);
 
@@ -31,7 +35,6 @@ export class AuthService {
 
             return new ServiceExecutionResult(status);
         }
-
 
         //2) Generate salt/hash
         let salt = await bcrypt.genSalt(10);
@@ -54,6 +57,27 @@ export class AuthService {
             );
 
         return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, this.DeletePriveInfo(user));
+    }
+
+    public async EmailResending(userEmail: string) {
+        let findUser = await this.userService.TakeByLoginOrEmail("createdAt", "desc", undefined, userEmail);
+        let user = findUser.executionResultObject.items[0] as ServiceDto<UserDto>;
+
+        if (findUser.executionResultObject.items.length !== 1)
+            return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound);
+
+        if (user.emailConfirmed)
+            return new ServiceExecutionResult(ServiceExecutionResultStatus.UserAlreadyConfirmed);
+
+
+        let tokenLoad: TokenLoad_confirmEmail = { id: user.id }
+        let token = await this.jwtService.signAsync(tokenLoad);
+
+
+        this.emailService.SendEmail(this.emailService._CONFIRM_EMAIL_FORM(user.email, token, CONFIRM_REGISTRATION_URL));
+
+        return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, this.DeletePriveInfo(user));
+
     }
 
     public async Login(emailOrLogin: string, password: string): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, { accessToken: string }>> {
@@ -144,8 +168,8 @@ export class AuthService {
         return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, saveUser.executionResultObject);
     }
 
-    private DeletePriveInfo(userDto: ServiceDto<UserDto>) {
-        let { ...rest } = userDto;
+    private DeletePriveInfo(userDto: ServiceDto<UserDto>): User {
+        let { salt, hash, refreshPasswordTime, updatedAt, emailConfirmed, ...rest } = userDto;
 
         return rest;
     }
