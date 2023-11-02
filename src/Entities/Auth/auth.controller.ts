@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards, Request, Query } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards, Request, Query, UnauthorizedException } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { CreateUserDto } from "../Users/UsersRepo/Dtos/CreateUserDto";
 import { ServiceExecutionResultStatus } from "../../Common/Services/Types/ServiceExecutionStatus";
@@ -67,7 +67,7 @@ export class AuthController {
 
             default:
             case ServiceExecutionResultStatus.NotFound:
-                throw new BadRequestException();
+                throw new UnauthorizedException();
                 break;
         }
 
@@ -90,8 +90,8 @@ export class AuthController {
                 return;
 
             default:
-            case ServiceExecutionResultStatus.UserAlreadyExist:
-                throw new BadRequestException();
+            case ServiceExecutionResultStatus.EmailAlreadyExist:
+                throw new BadRequestException({ errorsMessages: [{ message: "Email already exist", field: "email" }] })
                 break;
         }
     }
@@ -109,9 +109,14 @@ export class AuthController {
             case ServiceExecutionResultStatus.Success:
                 return;
 
+            case ServiceExecutionResultStatus.EmailAlreadyExist:
+                throw new BadRequestException({ errorsMessages: [{ message: "Email already exist", field: "email" }] })
+                break;
+
             default:
-            case ServiceExecutionResultStatus.UserAlreadyExist:
-                throw new BadRequestException()
+            case ServiceExecutionResultStatus.LoginAlreadyExist:
+                throw new BadRequestException({ errorsMessages: [{ message: "Login already exist", field: "login" }] })
+                break;
         }
     }
 

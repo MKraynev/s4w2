@@ -16,7 +16,7 @@ export class ValidationPipe implements PipeTransform<any> {
     const errors = await validate(object);
     if (errors.length > 0) {
       let result = {
-        errorMessages: []
+        errorsMessages: []
       }
       errors.forEach(e => {
         e as ValidationError;
@@ -26,7 +26,7 @@ export class ValidationPipe implements PipeTransform<any> {
           field: e.property
         }
 
-        result.errorMessages.push(message);
+        result.errorsMessages.push(message);
       })
       throw new BadRequestException(result);
     }

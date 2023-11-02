@@ -23,8 +23,15 @@ export class AuthService {
     public async Registration(userDto: CreateUserDto, confirmed: boolean = false): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, ServiceDto<UserDto>>> {
         //1) stop if user exist
         let findUser = await this.userService.TakeByLoginOrEmail("createdAt", "desc", userDto.login, userDto.email);
-        if (findUser.executionResultObject.items.length !== 0)
-            return new ServiceExecutionResult(ServiceExecutionResultStatus.UserAlreadyExist);
+
+        if (findUser.executionResultObject.items.length !== 0) {
+            let user = findUser.executionResultObject.items[0];
+
+            let status = user.login === userDto.login ? ServiceExecutionResultStatus.LoginAlreadyExist : ServiceExecutionResultStatus.EmailAlreadyExist
+
+            return new ServiceExecutionResult(status);
+        }
+
 
         //2) Generate salt/hash
         let salt = await bcrypt.genSalt(10);
@@ -71,7 +78,7 @@ export class AuthService {
             return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound)
 
         if (userDocument.emailConfirmed)
-            return new ServiceExecutionResult(ServiceExecutionResultStatus.UserAlreadyExist);
+            return new ServiceExecutionResult(ServiceExecutionResultStatus.EmailAlreadyExist);
 
         userDocument.emailConfirmed = true;
 
