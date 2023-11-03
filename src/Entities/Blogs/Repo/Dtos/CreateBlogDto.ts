@@ -1,6 +1,7 @@
-import { IsUrl, MaxLength } from "class-validator";
+import { IsUrl, MaxLength, MinLength } from "class-validator";
 
 export class CreateBlogDto {
+    @MinLength(3)
     @MaxLength(15)
     public name: string;
 

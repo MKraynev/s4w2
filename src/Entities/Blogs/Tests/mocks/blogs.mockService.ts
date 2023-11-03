@@ -6,13 +6,13 @@ import { CreateBlogDto } from "../../Repo/Dtos/CreateBlogDto";
 import { BlogDto } from "../../Repo/Schema/blog.schema";
 
 let blogs: ServiceDto<BlogDto>[] = [
-    { ...new BlogDto("some name", "some description", "some url"), id: "1234567892", isMembership: false, createdAt: new Date() },
-    { ...new BlogDto("some name 2", "some description 2", "some url 2"), id: "1234567892", isMembership: false, createdAt: new Date() },
-    { ...new BlogDto("some name 3", "some description 3", "some url 3"), id: "1234567893", isMembership: false, createdAt: new Date() },
-    { ...new BlogDto("some name 4", "some description 4", "some url 4"), id: "1234567894", isMembership: false, createdAt: new Date() },
-    { ...new BlogDto("some name 5", "some description 5", "some url 5"), id: "1234567895", isMembership: false, createdAt: new Date() },
-    { ...new BlogDto("some name 6", "some description 6", "some url 6"), id: "1234567896", isMembership: false, createdAt: new Date() },
-    { ...new BlogDto("some name 7", "some description 7", "some url 7"), id: "1234567897", isMembership: false, createdAt: new Date() },
+    // { ...new BlogDto("some name", "some description", "some url"), id: "1234567892", isMembership: false, createdAt: new Date() },
+    // { ...new BlogDto("some name 2", "some description 2", "some url 2"), id: "1234567892", isMembership: false, createdAt: new Date() },
+    // { ...new BlogDto("some name 3", "some description 3", "some url 3"), id: "1234567893", isMembership: false, createdAt: new Date() },
+    // { ...new BlogDto("some name 4", "some description 4", "some url 4"), id: "1234567894", isMembership: false, createdAt: new Date() },
+    // { ...new BlogDto("some name 5", "some description 5", "some url 5"), id: "1234567895", isMembership: false, createdAt: new Date() },
+    // { ...new BlogDto("some name 6", "some description 6", "some url 6"), id: "1234567896", isMembership: false, createdAt: new Date() },
+    // { ...new BlogDto("some name 7", "some description 7", "some url 7"), id: "1234567897", isMembership: false, createdAt: new Date() },
 ];
 
 export const mockBlogService = {
