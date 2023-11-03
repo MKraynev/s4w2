@@ -11,6 +11,7 @@ import bcrypt from "bcrypt"
 import { CONFIRM_REGISTRATION_URL, REFRESH_PASSWORD_URL } from "../../settings";
 import { TokenLoad_confirmEmail } from "../../Auth/Tokens/tokenLoad.confirmEmail";
 import { TokenLoad_PasswordRecovery } from "../../Auth/Tokens/tokenLoad.passwordRecovery";
+import { SignOptions } from "jsonwebtoken"
 
 export type User = { login: string; email: string; createdAt: Date; id: string };
 
@@ -80,7 +81,7 @@ export class AuthService {
 
     }
 
-    public async Login(emailOrLogin: string, password: string): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, { accessToken: string }>> {
+    public async Login(emailOrLogin: string, password: string): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, { accessToken: string, refreshToken: string }>> {
         let foundUser = await this.userService.TakeByLoginOrEmail("createdAt", "desc", emailOrLogin, emailOrLogin, 0, 1);
 
         if (foundUser.executionResultObject.count !== 1)
@@ -93,11 +94,17 @@ export class AuthService {
         if (currentHash !== user.hash)
             return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound)
 
+        let RefreshJwtOption: SignOptions = { expiresIn: "5m" }
 
         let payLoad = { id: foundUser.executionResultObject.items[0].id }
-        let token = { accessToken: await this.jwtService.signAsync(payLoad) }
+        let accessToken = await this.jwtService.signAsync(payLoad);
+        let refreshToken = await this.jwtService.signAsync(payLoad, RefreshJwtOption);
 
-        return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, token)
+        let result = {
+            accessToken: accessToken,
+            refreshToken: refreshToken
+        }
+        return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, result)
     }
 
     public async ConfrimEmail(token: string): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, ServiceDto<UserDto>>> {

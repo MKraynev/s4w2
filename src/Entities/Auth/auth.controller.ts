@@ -1,11 +1,10 @@
-import { BadRequestException, Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards, Request, Query, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards, Request, Query, UnauthorizedException, Res } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { CreateUserDto } from "../Users/Repo/Dtos/CreateUserDto";
 import { ServiceExecutionResultStatus } from "../../Common/Services/Types/ServiceExecutionStatus";
-import { JwtAuthGuard } from "../../Auth/Guards/jwt-auth.guard";
+import { Response } from "express";
 import { LoginDto } from "./Dto/auth.login";
 import { ValidationPipe } from "../../Pipes/validation.pipe";
-import { IsString } from "class-validator";
 import { ConfrimWithEmailDto } from "./Dto/auth.confirmWithEmail";
 import { NewPasswordDto } from "./Dto/auth.newPasword";
 import { ConfirmWithCodeDto } from "./Dto/auth.confirmWithCode";
@@ -58,12 +57,17 @@ export class AuthController {
     //post -> /hometask_14/api/auth/login
     @Post('login')
     @HttpCode(HttpStatus.OK)
-    async Login(@Body(new ValidationPipe()) userDto: LoginDto) {
+    async Login(
+        @Body(new ValidationPipe()) userDto: LoginDto,
+        @Res({ passthrough: true }) response: Response) {
         let login = await this.authServise.Login(userDto.loginOrEmail, userDto.password)
 
         switch (login.executionStatus) {
             case ServiceExecutionResultStatus.Success:
-                return login.executionResultObject;
+                let result = login.executionResultObject;
+
+                response.cookie("refreshToken", result.refreshToken, { httpOnly: true, secure: true })
+                response.status(200).send({ accessToken: result.accessToken })
                 break;
 
             default:
@@ -71,11 +75,11 @@ export class AuthController {
                 throw new UnauthorizedException();
                 break;
         }
-
     }
 
 
     //post -> /hometask_14/api/auth/refresh-token
+    
 
     //post -> /hometask_14/api/auth/registration-confirmation
     @Post('registration-confirmation')
