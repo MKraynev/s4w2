@@ -8,6 +8,7 @@ import { InputPaginator, OutputPaginator } from "../../Paginator/Paginator";
 import { LikeService } from "../Likes/likes.service";
 import { CreateCommentDto } from "../Comments/Repo/Dto/CreateCommentDto";
 import { ValidationPipe } from "../../Pipes/validation.pipe";
+import { AdminGuard } from "../../Auth/Guards/admin.guard";
 
 @Controller("posts")
 export class PostController {
@@ -75,6 +76,7 @@ export class PostController {
 
     //post -> /hometask_13/api/posts
     @Post()
+    @UseGuards(AdminGuard)
     async SavePost(@Body(new ValidationPipe()) post: CreatePostDto) {
         let savePost = await this.postService.CreateByBlogId(post.blogId, post);
 
@@ -93,6 +95,7 @@ export class PostController {
 
     //put -> /hometask_13/api/posts/{id}
     @Put(":id")
+    @UseGuards(AdminGuard)
     @HttpCode(HttpStatus.NO_CONTENT)
     async UpdatePost(
         @Param("id") id: string,
@@ -117,6 +120,7 @@ export class PostController {
 
     //delete -> /hometask_13/api/posts/{id}
     @Delete(":id")
+    @UseGuards(AdminGuard)
     @HttpCode(HttpStatus.NO_CONTENT)
     async DeletePost(@Param('id') id: string) {
         let deletePost = await this.postService.Delete(id);
