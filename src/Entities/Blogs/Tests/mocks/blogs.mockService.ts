@@ -2,8 +2,8 @@ import { ServiceDto } from "../../../../Common/Services/Types/ServiceDto";
 import { ServiceExecutionResultStatus } from "../../../../Common/Services/Types/ServiceExecutionStatus";
 import { ServiceExecutionResult } from "../../../../Common/Services/Types/ServiseExecutionResult";
 import { TakeResult } from "../../../../Common/Services/crudService";
-import { CreateBlogDto } from "../../BlogsRepo/Dtos/CreateBlogDto";
-import { BlogDto } from "../../BlogsRepo/Schema/blog.schema";
+import { CreateBlogDto } from "../../Repo/Dtos/CreateBlogDto";
+import { BlogDto } from "../../Repo/Schema/blog.schema";
 
 let blogs: ServiceDto<BlogDto>[] = [
     { ...new BlogDto("some name", "some description", "some url"), id: "1234567892", isMembership: false, createdAt: new Date() },

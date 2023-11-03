@@ -1,16 +1,18 @@
-import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, NotFoundException, Param, Post, Put, Query } from '@nestjs/common';
-import { CreateBlogDto } from './BlogsRepo/Dtos/CreateBlogDto';
+import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, NotFoundException, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
+import { CreateBlogDto } from './Repo/Dtos/CreateBlogDto';
 import { BlogService } from './blogs.service';
-import { UpdateBlogDto } from './BlogsRepo/Dtos/UpdateBlogDto';
+import { UpdateBlogDto } from './Repo/Dtos/UpdateBlogDto';
 import { ServiceExecutionResultStatus } from '../../Common/Services/Types/ServiceExecutionStatus';
 import { ControllerBlogDto } from './Entities/blogs.controllerDto';
 import { PostService } from '../Posts/posts.service';
-import { CreatePostDto } from '../Posts/PostsRepo/Dtos/CreatePostDto';
-import { BlogDto } from './BlogsRepo/Schema/blog.schema';
+import { CreatePostDto } from '../Posts/Repo/Dtos/CreatePostDto';
+import { BlogDto } from './Repo/Schema/blog.schema';
 import { InputPaginator, OutputPaginator } from '../../Paginator/Paginator';
 import { QueryPaginator } from '../../Common/Routes/QueryParams/PaginatorQueryParams';
-import { PostDto } from "../Posts/PostsRepo/Schema/post.schema"
+import { PostDto } from "../Posts/Repo/Schema/post.schema"
 import { LikeService } from '../Likes/likes.service';
+import { AdminGuard } from '../../Auth/Guards/admin.guard';
+import { ValidationPipe } from '../../Pipes/validation.pipe';
 
 
 @Controller("blogs")
@@ -38,7 +40,6 @@ export class BlogController {
 
     switch (findAndCountBlogs.executionStatus) {
       case ServiceExecutionResultStatus.Success:
-        //TODO можно ли объявить единый фильтр для Controller?
         let blogs = findAndCountBlogs.executionResultObject.items.map(serviceBlog => new ControllerBlogDto(serviceBlog));
         let count = findAndCountBlogs.executionResultObject.count;
         let pagedBlogs = new OutputPaginator(count, blogs, paginator);
@@ -53,8 +54,9 @@ export class BlogController {
 
   //post -> hometask_13/api/blogs
   @Post()
+  @UseGuards(AdminGuard)
   @HttpCode(HttpStatus.CREATED)
-  async saveBlog(@Body() blog: CreateBlogDto) {
+  async saveBlog(@Body(new ValidationPipe()) blog: CreateBlogDto) {
     let savedBlog = await this.blogService.Save(blog);
 
     switch (savedBlog.executionStatus) {
@@ -103,8 +105,9 @@ export class BlogController {
 
   //post -> hometask_13/api/blogs/{blogId}/posts
   @Post(':id/posts')
+  @UseGuards(AdminGuard)
   @HttpCode(HttpStatus.CREATED)
-  async SaveBlogsPosts(@Param('id') id: string, @Body() postData: CreatePostDto) {
+  async SaveBlogsPosts(@Param('id') id: string, @Body(new ValidationPipe()) postData: CreatePostDto) {
     let createPost = await this.postService.CreateByBlogId(id, postData);
 
     switch (createPost.executionStatus) {
@@ -141,10 +144,11 @@ export class BlogController {
 
   //put -> /hometask_13/api/blogs/{id}
   @Put(":id")
+  @UseGuards(AdminGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async UpdateBlog(
     @Param('id') id: string,
-    @Body() blogData: UpdateBlogDto) {
+    @Body(new ValidationPipe()) blogData: CreateBlogDto) {
     let updateBlog = await this.blogService.UpdateDto(id, blogData);
 
     switch (updateBlog.executionStatus) {
@@ -161,6 +165,7 @@ export class BlogController {
 
   //delete -> /hometask_13/api/blogs/{id}
   @Delete(":id")
+  @UseGuards(AdminGuard)
   @HttpCode(HttpStatus.NO_CONTENT)
   async DeleteBlog(@Param('id') id: string) {
     let deleteBlog = await this.blogService.Delete(id);

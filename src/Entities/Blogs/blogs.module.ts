@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { BlogController } from './blogs.controller';
 import { BlogService } from './blogs.service';
-import { BlogsRepoModule } from './BlogsRepo/blogsRepo.module';
+import { BlogsRepoModule } from './Repo/blogsRepo.module';
 import { PostsModule } from '../Posts/posts.module';
 import { LikesModule } from '../Likes/likes.module';
 

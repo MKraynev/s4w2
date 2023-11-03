@@ -1,6 +1,6 @@
 import { BadRequestException, Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards, Request, Query, UnauthorizedException } from "@nestjs/common";
 import { AuthService } from "./auth.service";
-import { CreateUserDto } from "../Users/UsersRepo/Dtos/CreateUserDto";
+import { CreateUserDto } from "../Users/Repo/Dtos/CreateUserDto";
 import { ServiceExecutionResultStatus } from "../../Common/Services/Types/ServiceExecutionStatus";
 import { JwtAuthGuard } from "../../Auth/Guards/jwt-auth.guard";
 import { LoginDto } from "./Dto/auth.login";

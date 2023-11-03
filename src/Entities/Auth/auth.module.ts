@@ -7,7 +7,7 @@ import { ACCESS_TOKEN_EXPIRE, JWT_SECRET } from "../../settings";
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 import { JwtStrategy } from "../../Auth/Strategies/jwt.strategy";
-import { UsersRepoModule } from "../Users/UsersRepo/usersRepo.module";
+import { UsersRepoModule } from "../Users/Repo/usersRepo.module";
 import { UserService } from "../Users/users.service";
 
 @Module({

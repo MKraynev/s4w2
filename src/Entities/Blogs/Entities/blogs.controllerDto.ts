@@ -1,4 +1,4 @@
-import { BlogDto } from "../BlogsRepo/Schema/blog.schema";
+import { BlogDto } from "../Repo/Schema/blog.schema";
 import { ServiceDto } from "../../../Common/Services/Types/ServiceDto";
 
 export class ControllerBlogDto {

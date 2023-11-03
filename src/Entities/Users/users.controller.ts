@@ -1,9 +1,9 @@
 import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, NotFoundException, Param, Post, Query, UseGuards } from "@nestjs/common";
-import { UserDto } from "./UsersRepo/Schema/user.schema";
+import { UserDto } from "./Repo/Schema/user.schema";
 import { QueryPaginator } from "../../Common/Routes/QueryParams/PaginatorQueryParams";
 import { InputPaginator, OutputPaginator } from "../../Paginator/Paginator";
 import { ServiceExecutionResultStatus } from "../../Common/Services/Types/ServiceExecutionStatus";
-import { CreateUserDto } from "./UsersRepo/Dtos/CreateUserDto";
+import { CreateUserDto } from "./Repo/Dtos/CreateUserDto";
 import { AuthService } from "../Auth/auth.service";
 import { ValidationPipe } from "../../Pipes/validation.pipe";
 import { AdminGuard } from "../../Auth/Guards/admin.guard";

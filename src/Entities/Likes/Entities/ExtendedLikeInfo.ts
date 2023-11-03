@@ -1,4 +1,4 @@
-import { AvailableLikeStatus } from "../LikesRepo/Dtos/createLikeDto";
+import { AvailableLikeStatus } from "../Repo/Dtos/createLikeDto";
 import { LiteLikeInfo } from "./LiteLikeInfo";
 
 export class ExtendedLikeInfo {

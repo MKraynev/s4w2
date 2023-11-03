@@ -1,12 +1,13 @@
 import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, NotFoundException, Param, Post, Put, Query, UseGuards } from "@nestjs/common";
 import { PostService } from "./posts.service";
 import { ServiceExecutionResultStatus } from "../../Common/Services/Types/ServiceExecutionStatus";
-import { CreatePostDto } from "./PostsRepo/Dtos/CreatePostDto";
+import { CreatePostDto } from "./Repo/Dtos/CreatePostDto";
 import { QueryPaginator } from "../../Common/Routes/QueryParams/PaginatorQueryParams";
-import { PostDto } from "./PostsRepo/Schema/post.schema";
+import { PostDto } from "./Repo/Schema/post.schema";
 import { InputPaginator, OutputPaginator } from "../../Paginator/Paginator";
 import { LikeService } from "../Likes/likes.service";
-import { CreateCommentDto } from "../Comments/CommentsRepo/Dto/CreateCommentDto";
+import { CreateCommentDto } from "../Comments/Repo/Dto/CreateCommentDto";
+import { ValidationPipe } from "../../Pipes/validation.pipe";
 
 @Controller("posts")
 export class PostController {
@@ -68,19 +69,17 @@ export class PostController {
     async SaveComment(
         @Param('id') id: string,
         @Body() commentData: CreateCommentDto) {
+            //TODO доделать
         return id;
     }
 
     //post -> /hometask_13/api/posts
     @Post()
-    async SavePost(@Body() post: CreatePostDto) {
+    async SavePost(@Body(new ValidationPipe()) post: CreatePostDto) {
         let savePost = await this.postService.CreateByBlogId(post.blogId, post);
 
         switch (savePost.executionStatus) {
             case ServiceExecutionResultStatus.Success:
-                //TODO Возвращаемая сущность содержит две инфы от постов и лайков
-                //Задавать логику лайков в посты нет желания
-                //Делать отдельный Join repo?
                 let { updatedAt, ...returnPost } = savePost.executionResultObject;
                 let decoratedPost = await this.likeService.DecorateWithExtendedInfo(returnPost.id, returnPost);
                 return decoratedPost;
@@ -97,7 +96,7 @@ export class PostController {
     @HttpCode(HttpStatus.NO_CONTENT)
     async UpdatePost(
         @Param("id") id: string,
-        @Body() postData: CreatePostDto
+        @Body(new ValidationPipe()) postData: CreatePostDto
     ) {
         let updatePost = await this.postService.UpdateDto(id, postData);
 

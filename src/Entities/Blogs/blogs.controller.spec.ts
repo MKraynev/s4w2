@@ -3,7 +3,7 @@ import { BlogController } from "./blogs.controller"
 import { BlogService } from "./blogs.service";
 import { PostService } from "../Posts/posts.service";
 import { LikeService } from "../Likes/likes.service";
-import { CreateBlogDto } from "./BlogsRepo/Dtos/CreateBlogDto";
+import { CreateBlogDto } from "./Repo/Dtos/CreateBlogDto";
 import { mockBlogService } from "./Tests/mocks/blogs.mockService";
 import { InputPaginator } from "../../Paginator/Paginator";
 

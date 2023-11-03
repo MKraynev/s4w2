@@ -1,12 +1,12 @@
 import { Injectable } from "@nestjs/common";
-import { PostsRepoService } from "./PostsRepo/postsRepo.service";
+import { PostsRepoService } from "./Repo/postsRepo.service";
 import { CrudService, TakeResult } from "../../Common/Services/crudService";
-import { CreatePostDto } from "./PostsRepo/Dtos/CreatePostDto";
-import { PostDto, PostDocument } from "./PostsRepo/Schema/post.schema";
+import { CreatePostDto } from "./Repo/Dtos/CreatePostDto";
+import { PostDto, PostDocument } from "./Repo/Schema/post.schema";
 import { ServiceExecutionResultStatus } from "../../Common/Services/Types/ServiceExecutionStatus";
 import { ServiceExecutionResult } from "../../Common/Services/Types/ServiseExecutionResult";
 import { ServiceDto } from "../../Common/Services/Types/ServiceDto";
-import { BlogsRepoService } from "../Blogs/BlogsRepo/blogsRepo.service";
+import { BlogsRepoService } from "../Blogs/Repo/blogsRepo.service";
 import { LikeService } from "../Likes/likes.service";
 import { CommentService } from "../Comments/comments.service";
 

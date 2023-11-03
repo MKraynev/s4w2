@@ -1,10 +1,10 @@
 import { Injectable } from "@nestjs/common";
 import { CrudService, TakeResult } from "../../Common/Services/crudService";
-import { CreateCommentDto } from "./CommentsRepo/Dto/CreateCommentDto";
-import { CommentDocument, CommentDto } from "./CommentsRepo/Schema/comment.schema";
-import { CommentRepoService } from "./CommentsRepo/commentRepo.service";
+import { CreateCommentDto } from "./Repo/Dto/CreateCommentDto";
+import { CommentDocument, CommentDto } from "./Repo/Schema/comment.schema";
+import { CommentRepoService } from "./Repo/commentRepo.service";
 import { MongooseFindUnit, MongooseRepoFindPattern_OR } from "../../Repos/Mongoose/Searcher/MongooseRepoFindPattern";
-import { CommentTarget } from "./CommentsRepo/Dto/CommentTarget";
+import { CommentTarget } from "./Repo/Dto/CommentTarget";
 import { ServiceExecutionResultStatus } from "../../Common/Services/Types/ServiceExecutionStatus";
 import { ServiceExecutionResult } from "../../Common/Services/Types/ServiseExecutionResult";
 import { ServiceDto } from "../../Common/Services/Types/ServiceDto";

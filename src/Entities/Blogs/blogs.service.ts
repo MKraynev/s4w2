@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { BlogsRepoService } from './BlogsRepo/blogsRepo.service';
-import { CreateBlogDto } from './BlogsRepo/Dtos/CreateBlogDto';
-import { BlogDto, BlogDocument } from './BlogsRepo/Schema/blog.schema';
+import { BlogsRepoService } from './Repo/blogsRepo.service';
+import { CreateBlogDto } from './Repo/Dtos/CreateBlogDto';
+import { BlogDto, BlogDocument } from './Repo/Schema/blog.schema';
 import { CrudService } from '../../Common/Services/crudService';
 
 @Injectable()

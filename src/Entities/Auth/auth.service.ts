@@ -3,8 +3,8 @@ import { ServiceDto } from "../../Common/Services/Types/ServiceDto";
 import { ServiceExecutionResultStatus } from "../../Common/Services/Types/ServiceExecutionStatus";
 import { ServiceExecutionResult } from "../../Common/Services/Types/ServiseExecutionResult";
 import { EmailService } from "../../Email/email.service";
-import { CreateUserDto } from "../Users/UsersRepo/Dtos/CreateUserDto";
-import { UserDocument, UserDto } from "../Users/UsersRepo/Schema/user.schema";
+import { CreateUserDto } from "../Users/Repo/Dtos/CreateUserDto";
+import { UserDocument, UserDto } from "../Users/Repo/Schema/user.schema";
 import { UserService } from "../Users/users.service";
 import { Injectable } from "@nestjs/common";
 import bcrypt from "bcrypt"

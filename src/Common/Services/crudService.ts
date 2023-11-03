@@ -37,10 +37,13 @@ export class CrudService<
     public async TakeByIdDto(id: string): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, ServiceDto<EntityDocument>>> {
         let findDocument = await this.TakeByIdDocument(id);
 
-        return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, findDocument.executionResultObject.toObject()) 
+        if (findDocument.executionStatus === ServiceExecutionResultStatus.NotFound)
+            return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound);
+
+        return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, findDocument.executionResultObject.toObject())
     }
 
-    public async TakeByIdDocument(id: string): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, EntityDocument>>{
+    public async TakeByIdDocument(id: string): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, EntityDocument>> {
         let item = await this.repo.FindById(id);
         if (item)
             return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, item)
@@ -48,12 +51,12 @@ export class CrudService<
         return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound)
     }
 
-    public async UpdateDto(id: string, dto: CreateAndUpdateEntityDto): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, ServiceDto<EntityType>>>{
+    public async UpdateDto(id: string, dto: CreateAndUpdateEntityDto): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, ServiceDto<EntityType>>> {
         let findDocument = await this.repo.FindById(id);
-            if(!findDocument){
-                return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound)
-            }
-        
+        if (!findDocument) {
+            return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound)
+        }
+
         Object.assign(findDocument, dto);
 
         let updatedObject = (await this.repo.Update(findDocument)).toObject() as ServiceDto<EntityType>;

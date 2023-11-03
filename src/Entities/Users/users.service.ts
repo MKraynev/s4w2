@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { CrudService, TakeResult } from "../../Common/Services/crudService";
 
-import { UserDocument, UserDto } from "./UsersRepo/Schema/user.schema";
-import { UsersRepoService } from "./UsersRepo/usersRepo.service";
+import { UserDocument, UserDto } from "./Repo/Schema/user.schema";
+import { UsersRepoService } from "./Repo/usersRepo.service";
 import { ServiceExecutionResult } from "../../Common/Services/Types/ServiseExecutionResult";
 import { ServiceExecutionResultStatus } from "../../Common/Services/Types/ServiceExecutionStatus";
 import { ServiceDto } from "../../Common/Services/Types/ServiceDto";
