@@ -18,7 +18,7 @@ export class BlogController {
   constructor(private blogService: BlogService, private postService: PostService, private likeService: LikeService) { }
 
   //get -> hometask_13/api/blogs
-  //TODO можно ли вынести QUERY в одит объект
+  //TODO можно ли вынести QUERY в одит объект - можно как и в body
   @Get()
   async getBlog(
     @Query('searchNameTerm') nameTerm: string | undefined,
