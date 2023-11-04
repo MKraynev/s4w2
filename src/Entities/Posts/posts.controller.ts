@@ -9,10 +9,17 @@ import { LikeService } from "../Likes/likes.service";
 import { CreateCommentDto } from "../Comments/Repo/Dto/CreateCommentDto";
 import { ValidationPipe } from "../../Pipes/validation.pipe";
 import { AdminGuard } from "../../Auth/Guards/admin.guard";
+import { CreateLikeDto } from "../Likes/Repo/Dtos/createLikeDto";
 
 @Controller("posts")
 export class PostController {
     constructor(private postService: PostService, private likeService: LikeService) { }
+
+    // put -> /hometask_14/api/posts/{postId}/like-status
+    @Put(':id/like-status')
+    async PutLike(@Body(new ValidationPipe()) likeData: CreateLikeDto){
+        
+    }
 
     @Get()
     async GetPosts(
@@ -78,7 +85,7 @@ export class PostController {
     @Post()
     @UseGuards(AdminGuard)
     async SavePost(@Body(new ValidationPipe()) post: CreatePostDto) {
-        let savePost = await this.postService.CreateByBlogId(post.blogId, post);
+        let savePost = await this.postService.CreateByBlogId("", post);
 
         switch (savePost.executionStatus) {
             case ServiceExecutionResultStatus.Success:

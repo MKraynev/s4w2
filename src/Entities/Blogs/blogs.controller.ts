@@ -107,7 +107,10 @@ export class BlogController {
   @Post(':id/posts')
   @UseGuards(AdminGuard)
   @HttpCode(HttpStatus.CREATED)
-  async SaveBlogsPosts(@Param('id') id: string, @Body(new ValidationPipe()) postData: CreatePostDto) {
+  async SaveBlogsPosts(
+    @Param('id') id: string, 
+    @Body(new ValidationPipe()) postData: CreatePostDto) {
+
     let createPost = await this.postService.CreateByBlogId(id, postData);
 
     switch (createPost.executionStatus) {

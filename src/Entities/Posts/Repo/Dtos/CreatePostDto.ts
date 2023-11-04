@@ -1,4 +1,4 @@
-import { IsString, MaxLength } from "class-validator";
+import { MaxLength } from "class-validator";
 
 export class CreatePostDto {
     @MaxLength(30)
@@ -9,7 +9,4 @@ export class CreatePostDto {
 
     @MaxLength(1000)
     public content: string;
-
-    @IsString()
-    public blogId: string;
 }
