@@ -85,7 +85,7 @@ export class PostController {
     @Post()
     @UseGuards(AdminGuard)
     async SavePost(@Body(new ValidationPipe()) post: Post_CreatePostDto) {
-        let savePost = await this.postService.CreateByBlogId("", post);
+        let savePost = await this.postService.CreateByBlogId(post.blogId, post);
 
         switch (savePost.executionStatus) {
             case ServiceExecutionResultStatus.Success:
