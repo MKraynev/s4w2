@@ -5,7 +5,7 @@ export class ExtendedLikeInfo {
     constructor(
         public likesCount: number = 0,
         public dislikesCount: number = 0,
-        public myStatus: AvailableLikeStatus = "None",
+        public myStatus: string = AvailableLikeStatus[AvailableLikeStatus.None],
         public newestLikes: Array<LiteLikeInfo> = []
     ) {}
 }

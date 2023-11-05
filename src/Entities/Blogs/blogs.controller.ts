@@ -5,7 +5,7 @@ import { UpdateBlogDto } from './Repo/Dtos/UpdateBlogDto';
 import { ServiceExecutionResultStatus } from '../../Common/Services/Types/ServiceExecutionStatus';
 import { ControllerBlogDto } from './Entities/blogs.controllerDto';
 import { PostService } from '../Posts/posts.service';
-import { CreatePostDto } from '../Posts/Repo/Dtos/CreatePostDto';
+import { Post_CreatePostDto } from '../Posts/Repo/Dtos/posts.createPostDto';
 import { BlogDto } from './Repo/Schema/blog.schema';
 import { InputPaginator, OutputPaginator } from '../../Paginator/Paginator';
 import { QueryPaginator } from '../../Common/Routes/QueryParams/PaginatorQueryParams';
@@ -13,6 +13,7 @@ import { PostDto } from "../Posts/Repo/Schema/post.schema"
 import { LikeService } from '../Likes/likes.service';
 import { AdminGuard } from '../../Auth/Guards/admin.guard';
 import { ValidationPipe } from '../../Pipes/validation.pipe';
+import { Blogs_CreatePostDto } from './Entities/blogs.createPostDto';
 
 
 @Controller("blogs")
@@ -109,7 +110,7 @@ export class BlogController {
   @HttpCode(HttpStatus.CREATED)
   async SaveBlogsPosts(
     @Param('id') id: string, 
-    @Body(new ValidationPipe()) postData: CreatePostDto) {
+    @Body(new ValidationPipe()) postData: Blogs_CreatePostDto) {
 
     let createPost = await this.postService.CreateByBlogId(id, postData);
 

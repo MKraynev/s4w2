@@ -1,7 +1,7 @@
 import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, NotFoundException, Param, Post, Put, Query, UseGuards } from "@nestjs/common";
 import { PostService } from "./posts.service";
 import { ServiceExecutionResultStatus } from "../../Common/Services/Types/ServiceExecutionStatus";
-import { CreatePostDto } from "./Repo/Dtos/CreatePostDto";
+import { Post_CreatePostDto } from "./Repo/Dtos/posts.createPostDto";
 import { QueryPaginator } from "../../Common/Routes/QueryParams/PaginatorQueryParams";
 import { PostDto } from "./Repo/Schema/post.schema";
 import { InputPaginator, OutputPaginator } from "../../Paginator/Paginator";
@@ -84,7 +84,7 @@ export class PostController {
     //post -> /hometask_13/api/posts
     @Post()
     @UseGuards(AdminGuard)
-    async SavePost(@Body(new ValidationPipe()) post: CreatePostDto) {
+    async SavePost(@Body(new ValidationPipe()) post: Post_CreatePostDto) {
         let savePost = await this.postService.CreateByBlogId("", post);
 
         switch (savePost.executionStatus) {
@@ -106,7 +106,7 @@ export class PostController {
     @HttpCode(HttpStatus.NO_CONTENT)
     async UpdatePost(
         @Param("id") id: string,
-        @Body(new ValidationPipe()) postData: CreatePostDto
+        @Body(new ValidationPipe()) postData: Post_CreatePostDto
     ) {
         let updatePost = await this.postService.UpdateDto(id, postData);
 
