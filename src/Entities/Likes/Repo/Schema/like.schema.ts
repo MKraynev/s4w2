@@ -24,7 +24,7 @@ export class LikeDto extends CreateLikeDto {
     targetId: string;
 
     @Prop()
-    status: AvailableLikeStatus
+    likeStatus: AvailableLikeStatus
 
     createdAt: Date;
 

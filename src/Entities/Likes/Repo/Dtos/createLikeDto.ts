@@ -9,16 +9,16 @@ export enum AvailableLikeStatus {
 export class CreateLikeDto {
 
     @IsEnum(AvailableLikeStatus)
-    public status: AvailableLikeStatus
+    public likeStatus: AvailableLikeStatus
 
-    constructor(status: AvailableLikeStatus) { this.status = status }
+    constructor(status: AvailableLikeStatus) { this.likeStatus = status }
 }
 
 export class CreateLikeWithIdDto extends CreateLikeDto {
     public targetId: string;
     
     constructor(id: string, data: CreateLikeDto) {
-        super(data.status);
+        super(data.likeStatus);
         this.targetId = id;
     }
 }

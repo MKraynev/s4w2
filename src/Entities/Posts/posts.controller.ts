@@ -10,6 +10,9 @@ import { CreateCommentDto } from "../Comments/Repo/Dto/CreateCommentDto";
 import { ValidationPipe } from "../../Pipes/validation.pipe";
 import { AdminGuard } from "../../Auth/Guards/admin.guard";
 import { CreateLikeDto } from "../Likes/Repo/Dtos/createLikeDto";
+import { JwtAuthGuard } from "../../Auth/Guards/jwt-auth.guard";
+import { RequestTokenLoad } from "../../Auth/Decorators/request.tokenLoad";
+import { TokenLoad_Access } from "../../Auth/Tokens/tokenLoad.access";
 
 @Controller("posts")
 export class PostController {
@@ -17,8 +20,11 @@ export class PostController {
 
     // put -> /hometask_14/api/posts/{postId}/like-status
     @Put(':id/like-status')
-    async PutLike(@Body(new ValidationPipe()) likeData: CreateLikeDto){
-        
+    @UseGuards(JwtAuthGuard)
+    async PutLike(
+        @Body(new ValidationPipe()) likeData: CreateLikeDto,
+        @RequestTokenLoad() tokenLoad: TokenLoad_Access) {
+        return tokenLoad;
     }
 
     @Get()
@@ -74,10 +80,11 @@ export class PostController {
     }
 
     @Post(':id/comments')
+    @UseGuards(JwtAuthGuard)
     async SaveComment(
         @Param('id') id: string,
         @Body() commentData: CreateCommentDto) {
-            //TODO доделать
+        //TODO доделать
         return id;
     }
 
