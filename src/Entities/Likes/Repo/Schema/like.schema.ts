@@ -23,7 +23,7 @@ export class LikeDto extends CreateLikeWithIdDto {
     @Prop({required: true})
     targetId: string;
 
-    @Prop()
+    @Prop({ type: String, enum: AvailableLikeStatus })
     likeStatus: AvailableLikeStatus
 
     createdAt: Date;
