@@ -87,7 +87,7 @@ export class BlogController {
       case ServiceExecutionResultStatus.Success:
         let decoratedPosts = await Promise.all(findPosts.executionResultObject.items.map(async (post) => {
           let { updatedAt, ...rest } = post;
-          let decoratedPost = await this.likeService.DecorateWithExtendedInfo(tokenLoad.id, rest.id, rest);
+          let decoratedPost = await this.likeService.DecorateWithExtendedInfo(tokenLoad?.id, rest.id, rest);
           return decoratedPost;
         }));
 

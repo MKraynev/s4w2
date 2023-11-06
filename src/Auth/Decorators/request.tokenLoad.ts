@@ -23,8 +23,8 @@ export const RequestTokenLoad = createParamDecorator(
 
             case TokenExpectation.Possibly:
                 let headerAuthString = req.header('authorization');
-                
-                if (!headerAuthString.startsWith("bearer "))
+
+                if (!headerAuthString || !headerAuthString.startsWith("bearer "))
                     return undefined;
 
                 let tokenValue = headerAuthString.split(" ")[1];
