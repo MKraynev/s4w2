@@ -111,15 +111,14 @@ export class PostController {
     @Post()
     @UseGuards(AdminGuard)
     async SavePost(
-        @Body(new ValidationPipe()) post: Post_CreatePostDto,
-        @RequestTokenLoad(TokenExpectation.Possibly) tokenLoad: TokenLoad_Access | undefined
+        @Body(new ValidationPipe()) post: Post_CreatePostDto
     ) {
         let savePost = await this.postService.CreateByBlogId(post.blogId, post);
 
         switch (savePost.executionStatus) {
             case ServiceExecutionResultStatus.Success:
                 let { updatedAt, ...returnPost } = savePost.executionResultObject;
-                let decoratedPost = await this.likeService.DecorateWithExtendedInfo(tokenLoad.id, returnPost.id, returnPost);
+                let decoratedPost = await this.likeService.DecorateWithExtendedInfo(undefined, returnPost.id, returnPost);
                 return decoratedPost;
                 break;
 
@@ -136,16 +135,12 @@ export class PostController {
     async UpdatePost(
         @Param("id") id: string,
         @Body(new ValidationPipe()) postData: Post_CreatePostDto,
-        @RequestTokenLoad(TokenExpectation.Possibly) tokenLoad: TokenLoad_Access | undefined
     ) {
         let updatePost = await this.postService.UpdateDto(id, postData);
 
         switch (updatePost.executionStatus) {
             case ServiceExecutionResultStatus.Success:
-                let { updatedAt, ...returnPost } = updatePost.executionResultObject;
-                let decoratedPost = await this.likeService.DecorateWithExtendedInfo(tokenLoad.id, returnPost.id, returnPost);
-
-                return decoratedPost;
+                return;
                 break;
 
             default:

@@ -1,11 +1,9 @@
 import { BadRequestException, Body, Controller, Delete, Get, HttpCode, HttpStatus, NotFoundException, Param, Post, Put, Query, UseGuards } from '@nestjs/common';
 import { CreateBlogDto } from './Repo/Dtos/CreateBlogDto';
 import { BlogService } from './blogs.service';
-import { UpdateBlogDto } from './Repo/Dtos/UpdateBlogDto';
 import { ServiceExecutionResultStatus } from '../../Common/Services/Types/ServiceExecutionStatus';
 import { ControllerBlogDto } from './Entities/blogs.controllerDto';
 import { PostService } from '../Posts/posts.service';
-import { Post_CreatePostDto } from '../Posts/Repo/Dtos/posts.createPostDto';
 import { BlogDto } from './Repo/Schema/blog.schema';
 import { InputPaginator, OutputPaginator } from '../../Paginator/Paginator';
 import { QueryPaginator } from '../../Common/Routes/QueryParams/PaginatorQueryParams';
@@ -16,7 +14,6 @@ import { ValidationPipe } from '../../Pipes/validation.pipe';
 import { Blogs_CreatePostDto } from './Entities/blogs.createPostDto';
 import { RequestTokenLoad, TokenExpectation } from '../../Auth/Decorators/request.tokenLoad';
 import { TokenLoad_Access } from '../../Auth/Tokens/tokenLoad.access';
-
 
 @Controller("blogs")
 export class BlogController {
@@ -113,15 +110,14 @@ export class BlogController {
   @HttpCode(HttpStatus.CREATED)
   async SaveBlogsPosts(
     @Param('id') id: string,
-    @Body(new ValidationPipe()) postData: Blogs_CreatePostDto,
-    @RequestTokenLoad(TokenExpectation.Possibly) tokenLoad: TokenLoad_Access | undefined) {
+    @Body(new ValidationPipe()) postData: Blogs_CreatePostDto) {
 
     let createPost = await this.postService.CreateByBlogId(id, postData);
 
     switch (createPost.executionStatus) {
       case ServiceExecutionResultStatus.Success:
         let { updatedAt, ...returnPost } = createPost.executionResultObject;
-        let decoratedPost = await this.likeService.DecorateWithExtendedInfo(tokenLoad.id, returnPost.id, returnPost);
+        let decoratedPost = await this.likeService.DecorateWithExtendedInfo(undefined, returnPost.id, returnPost);
 
         return decoratedPost;
         break;
