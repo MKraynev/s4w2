@@ -1,26 +1,23 @@
+import { ServiceDto } from "../../../Common/Services/Types/ServiceDto";
 import { AvailableLikeStatus } from "../Repo/Dtos/createLikeDto";
+import { LikeDocument, LikeDto } from "../Repo/Schema/like.schema";
 import { LiteLikeInfo } from "./LiteLikeInfo";
 
 export class ExtendedLikeInfo {
+    public myStatus: string;
+    public newestLikes: Array<LiteLikeInfo>;
+
     constructor(
         public likesCount: number = 0,
         public dislikesCount: number = 0,
-        public myStatus: string = AvailableLikeStatus[AvailableLikeStatus.None],
-        public newestLikes: Array<LiteLikeInfo> = []
-    ) {}
+        newestLikes: Array<LikeDocument | ServiceDto<LikeDto>> = [],
+        userStatus: AvailableLikeStatus = AvailableLikeStatus.None
+    ) {
+
+        this.myStatus = AvailableLikeStatus[userStatus];
+
+        this.newestLikes = newestLikes.length > 0 ?
+            newestLikes.map(like => new LiteLikeInfo(like.createdAt, like.userId, like.userLogin))
+            : []
+    }
 }
-
-
-
-// "extendedLikesInfo": {
-//     "likesCount": 0,
-//     "dislikesCount": 0,
-//     "myStatus": "None",
-//     "newestLikes": [
-//       {
-//         "addedAt": "2023-10-25T13:15:54.762Z",
-//         "userId": "string",
-//         "login": "string"
-//       }
-//     ]
-//   }

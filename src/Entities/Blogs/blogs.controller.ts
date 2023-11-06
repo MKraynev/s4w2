@@ -14,6 +14,8 @@ import { LikeService } from '../Likes/likes.service';
 import { AdminGuard } from '../../Auth/Guards/admin.guard';
 import { ValidationPipe } from '../../Pipes/validation.pipe';
 import { Blogs_CreatePostDto } from './Entities/blogs.createPostDto';
+import { RequestTokenLoad, TokenExpectation } from '../../Auth/Decorators/request.tokenLoad';
+import { TokenLoad_Access } from '../../Auth/Tokens/tokenLoad.access';
 
 
 @Controller("blogs")
@@ -79,7 +81,8 @@ export class BlogController {
     @Query('searchNameTerm') nameTerm: string | undefined,
     @Query('sortBy') sortBy: keyof (PostDto) = "createdAt",
     @Query('sortDirection') sortDirecrion: "desc" | "asc" = "desc",
-    @QueryPaginator() paginator: InputPaginator
+    @QueryPaginator() paginator: InputPaginator,
+    @RequestTokenLoad(TokenExpectation.Possibly) tokenLoad: TokenLoad_Access | undefined
   ) {
     let findPosts = await this.postService.TakeByBlogId(id, sortBy, sortDirecrion, paginator.skipElements, paginator.pageSize);
 
@@ -87,7 +90,7 @@ export class BlogController {
       case ServiceExecutionResultStatus.Success:
         let decoratedPosts = await Promise.all(findPosts.executionResultObject.items.map(async (post) => {
           let { updatedAt, ...rest } = post;
-          let decoratedPost = await this.likeService.DecorateWithExtendedInfo(rest.id, rest);
+          let decoratedPost = await this.likeService.DecorateWithExtendedInfo(tokenLoad.id, rest.id, rest);
           return decoratedPost;
         }));
 
@@ -109,15 +112,16 @@ export class BlogController {
   @UseGuards(AdminGuard)
   @HttpCode(HttpStatus.CREATED)
   async SaveBlogsPosts(
-    @Param('id') id: string, 
-    @Body(new ValidationPipe()) postData: Blogs_CreatePostDto) {
+    @Param('id') id: string,
+    @Body(new ValidationPipe()) postData: Blogs_CreatePostDto,
+    @RequestTokenLoad(TokenExpectation.Possibly) tokenLoad: TokenLoad_Access | undefined) {
 
     let createPost = await this.postService.CreateByBlogId(id, postData);
 
     switch (createPost.executionStatus) {
       case ServiceExecutionResultStatus.Success:
         let { updatedAt, ...returnPost } = createPost.executionResultObject;
-        let decoratedPost = await this.likeService.DecorateWithExtendedInfo(returnPost.id, returnPost);
+        let decoratedPost = await this.likeService.DecorateWithExtendedInfo(tokenLoad.id, returnPost.id, returnPost);
 
         return decoratedPost;
         break;

@@ -30,7 +30,7 @@ export class PostController {
         let likeInfo: CreateLikeWithIdDto = new CreateLikeWithIdDto(tokenLoad.id, tokenLoad.name, id, likeData);
         let setLike = await this.likeService.SetLikeData(likeInfo);
 
-        switch(setLike.executionStatus){
+        switch (setLike.executionStatus) {
             case ServiceExecutionResultStatus.Success:
                 return;
                 break;
@@ -54,12 +54,13 @@ export class PostController {
         switch (findPost.executionStatus) {
             case ServiceExecutionResultStatus.Success:
                 let count = findPost.executionResultObject.count;
-                let decoratedPosts = await Promise.all(findPost.executionResultObject.items.map(async (post) => {
 
+                let decoratedPosts = await Promise.all(findPost.executionResultObject.items.map(async (post) => {
                     let { updatedAt, ...rest } = post;
-                    let decoratedPost = await this.likeService.DecorateWithExtendedInfo(rest.id, rest)
+                    let decoratedPost = await this.likeService.DecorateWithExtendedInfo(tokenLoad.id, rest.id, rest)
                     return decoratedPost;
                 }));
+
                 let pagedPosts = new OutputPaginator(count, decoratedPosts, paginator)
                 return pagedPosts;
                 break;
@@ -71,13 +72,16 @@ export class PostController {
 
     //get -> /hometask_13/api/posts/{id}
     @Get(":id")
-    async GetPostById(@Param('id') id: string) {
+    async GetPostById(
+        @Param('id') id: string,
+        @RequestTokenLoad(TokenExpectation.Possibly) tokenLoad: TokenLoad_Access | undefined
+    ) {
         let findPost = await this.postService.TakeByIdDto(id);
 
         switch (findPost.executionStatus) {
             case ServiceExecutionResultStatus.Success:
                 let { updatedAt, ...returnPost } = findPost.executionResultObject;;
-                let decoratedPost = await this.likeService.DecorateWithExtendedInfo(returnPost.id, returnPost);
+                let decoratedPost = await this.likeService.DecorateWithExtendedInfo(tokenLoad.id, returnPost.id, returnPost);
                 return decoratedPost;
                 break;
 
@@ -106,13 +110,16 @@ export class PostController {
     //post -> /hometask_13/api/posts
     @Post()
     @UseGuards(AdminGuard)
-    async SavePost(@Body(new ValidationPipe()) post: Post_CreatePostDto) {
+    async SavePost(
+        @Body(new ValidationPipe()) post: Post_CreatePostDto,
+        @RequestTokenLoad(TokenExpectation.Possibly) tokenLoad: TokenLoad_Access | undefined
+    ) {
         let savePost = await this.postService.CreateByBlogId(post.blogId, post);
 
         switch (savePost.executionStatus) {
             case ServiceExecutionResultStatus.Success:
                 let { updatedAt, ...returnPost } = savePost.executionResultObject;
-                let decoratedPost = await this.likeService.DecorateWithExtendedInfo(returnPost.id, returnPost);
+                let decoratedPost = await this.likeService.DecorateWithExtendedInfo(tokenLoad.id, returnPost.id, returnPost);
                 return decoratedPost;
                 break;
 
@@ -128,14 +135,15 @@ export class PostController {
     @HttpCode(HttpStatus.NO_CONTENT)
     async UpdatePost(
         @Param("id") id: string,
-        @Body(new ValidationPipe()) postData: Post_CreatePostDto
+        @Body(new ValidationPipe()) postData: Post_CreatePostDto,
+        @RequestTokenLoad(TokenExpectation.Possibly) tokenLoad: TokenLoad_Access | undefined
     ) {
         let updatePost = await this.postService.UpdateDto(id, postData);
 
         switch (updatePost.executionStatus) {
             case ServiceExecutionResultStatus.Success:
                 let { updatedAt, ...returnPost } = updatePost.executionResultObject;
-                let decoratedPost = await this.likeService.DecorateWithExtendedInfo(returnPost.id, returnPost);
+                let decoratedPost = await this.likeService.DecorateWithExtendedInfo(tokenLoad.id, returnPost.id, returnPost);
 
                 return decoratedPost;
                 break;

@@ -1,12 +1,12 @@
 import { Injectable } from "@nestjs/common";
 import { LikesRepoService } from "./Repo/likesRepo.service";
 import { ExtendedLikeInfo } from "./Entities/ExtendedLikeInfo";
-import { CreateLikeWithIdDto } from "./Repo/Dtos/createLikeDto";
+import { AvailableLikeStatus, CreateLikeWithIdDto } from "./Repo/Dtos/createLikeDto";
 import { ServiceExecutionResult } from "../../Common/Services/Types/ServiseExecutionResult";
 import { ServiceExecutionResultStatus } from "../../Common/Services/Types/ServiceExecutionStatus";
 import { ServiceDto } from "../../Common/Services/Types/ServiceDto";
 import { LikeDocument, LikeDto } from "./Repo/Schema/like.schema";
-import { MongooseFindUnit, MongooseRepoFindPattern_OR } from "../../Repos/Mongoose/Searcher/MongooseRepoFindPattern";
+import { MongooseFindUnit, MongooseRepoFindPattern_AND, MongooseRepoFindPattern_OR } from "../../Repos/Mongoose/Searcher/MongooseRepoFindPattern";
 import { PostsRepoService } from "../Posts/Repo/postsRepo.service";
 
 @Injectable()
@@ -17,15 +17,42 @@ export class LikeService {
         return new ExtendedLikeInfo();
     }
 
-    public async DecorateWithExtendedInfo(userId: string, searchById: string, object: any) {
+    public async DecorateWithExtendedInfo(userId: string | undefined, searchById: string, object: any) {
         //TODO убрать private функцию - сделать сборку через new ExtendedLikeInfo(N, M, ...)
-        let extendedLikesInfo = LikeService.GetEmptyExtendedData();
+        let userStatus: AvailableLikeStatus = userId ?
+            await this.FindUserLikeStatus(userId, searchById)
+            : AvailableLikeStatus.None;
+
+
+        let searchByPostId: MongooseFindUnit<LikeDto> = {
+            field: "targetId",
+            value: searchById
+        }
+        let searchByLikeStatus: MongooseFindUnit<LikeDto> = {
+            field: "likeStatus",
+            value: AvailableLikeStatus.Like
+        }
+        let searchByDislikeStatus: MongooseFindUnit<LikeDto> = {
+            field: "likeStatus",
+            value: AvailableLikeStatus.Dislike
+        }
+
+        let mongooseSearchLikePattern = new MongooseRepoFindPattern_AND(searchByPostId, searchByLikeStatus)
+        let countLikes = await this.likesRepo.CountByPattern(mongooseSearchLikePattern);
+
+        let mongooseSearchDislikePattern = new MongooseRepoFindPattern_AND(searchByPostId, searchByDislikeStatus)
+        let countDislikes = await this.likesRepo.CountByPattern(mongooseSearchDislikePattern);
+
+        let newestLikes = await this.likesRepo.FindByPatterns(mongooseSearchLikePattern, "createdAt", "desc", 0, 3);        
+
+        let extendedLikesInfo = new ExtendedLikeInfo(countLikes, countDislikes, newestLikes, userStatus);
+        
         let result = { ...object, extendedLikesInfo }
         return result;
     }
 
     public async SetLikeData(likeData: CreateLikeWithIdDto): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, ServiceDto<LikeDto>>> {
-        let currentLikeData = await this.FindUserLike(likeData.userId, likeData.targetId);
+        let currentLikeData = await this.FindUserLikeDocument(likeData.userId, likeData.targetId);
 
         let resultLikeData: LikeDocument;
 
@@ -50,16 +77,20 @@ export class LikeService {
 
 
 
-    private async FindUserLike(userId: string, targetId: string): Promise<LikeDocument | undefined> {
+    private async FindUserLikeDocument(userId: string, targetId: string): Promise<LikeDocument | undefined> {
         let userIdFindUnit: MongooseFindUnit<LikeDto> = { field: "userId", value: userId }
         let targetIdFindUnit: MongooseFindUnit<LikeDto> = { field: "targetId", value: targetId }
 
-        let findPattern = new MongooseRepoFindPattern_OR(userIdFindUnit, targetIdFindUnit);
-
-
+        let findPattern = new MongooseRepoFindPattern_AND(userIdFindUnit, targetIdFindUnit);
 
         let foundLikes = await this.likesRepo.FindByPatterns(findPattern, "createdAt", "desc", 0, 1) as LikeDocument[];
         return foundLikes[0] || undefined;
+    }
+
+    private async FindUserLikeStatus(userId: string, targetId: string): Promise<AvailableLikeStatus> {
+        let userLikeDocument = await this.FindUserLikeDocument(userId, targetId);
+
+        return userLikeDocument.toObject().likeStatus || AvailableLikeStatus.None;
     }
 }
 
