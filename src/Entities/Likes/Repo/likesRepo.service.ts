@@ -6,10 +6,12 @@ import { LikeDocument, LikeDto } from "./Schema/like.schema";
 import { CreateLikeDto } from "./Dtos/createLikeDto";
 
 @Injectable()
-export class LikesRepoService { }
-
-// extends MongooseRepo<LikeDto, CreateLikeDto, LikeDocument>{
-//     constructor(@InjectModel(LikeDto.name) private likeModel: Model<LikeDto>) {
-//         super(likeModel)
-//     }
-// }
+export class LikesRepoService extends MongooseRepo<LikeDto, CreateLikeDto, LikeDocument>{
+    /**
+     *
+     */
+    constructor(@InjectModel(LikeDto.name) private likeModel: Model<LikeDto>) {
+        super(likeModel);
+        
+    }
+ }

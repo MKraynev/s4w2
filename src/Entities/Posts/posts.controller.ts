@@ -9,7 +9,7 @@ import { LikeService } from "../Likes/likes.service";
 import { CreateCommentDto } from "../Comments/Repo/Dto/CreateCommentDto";
 import { ValidationPipe } from "../../Pipes/validation.pipe";
 import { AdminGuard } from "../../Auth/Guards/admin.guard";
-import { CreateLikeDto } from "../Likes/Repo/Dtos/createLikeDto";
+import { CreateLikeDto, CreateLikeWithIdDto } from "../Likes/Repo/Dtos/createLikeDto";
 import { JwtAuthGuard } from "../../Auth/Guards/jwt-auth.guard";
 import { RequestTokenLoad } from "../../Auth/Decorators/request.tokenLoad";
 import { TokenLoad_Access } from "../../Auth/Tokens/tokenLoad.access";
@@ -21,10 +21,25 @@ export class PostController {
     // put -> /hometask_14/api/posts/{postId}/like-status
     @Put(':id/like-status')
     @UseGuards(JwtAuthGuard)
+    @HttpCode(HttpStatus.NO_CONTENT)
     async PutLike(
         @Body(new ValidationPipe()) likeData: CreateLikeDto,
-        @RequestTokenLoad() tokenLoad: TokenLoad_Access) {
-        return tokenLoad;
+        @Param('id') id: string,
+        @RequestTokenLoad() tokenLoad: TokenLoad_Access
+    ) {
+        let likeInfo: CreateLikeWithIdDto = new CreateLikeWithIdDto(tokenLoad.id, tokenLoad.name, id, likeData);
+        let setLike = await this.likeService.SetLikeData(likeInfo);
+
+        switch(setLike.executionStatus){
+            case ServiceExecutionResultStatus.Success:
+                return;
+                break;
+
+            default:
+            case ServiceExecutionResultStatus.NotFound:
+                throw new NotFoundException();
+                break;
+        }
     }
 
     @Get()

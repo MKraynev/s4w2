@@ -15,10 +15,17 @@ export class CreateLikeDto {
 }
 
 export class CreateLikeWithIdDto extends CreateLikeDto {
-    public targetId: string;
     
-    constructor(id: string, data: CreateLikeDto) {
+    public userId: string;
+    public userLogin: string;
+    public targetId: string;
+
+
+
+    constructor(userId: string, userLogin: string, targetId: string, data: CreateLikeDto) {
         super(data.likeStatus);
-        this.targetId = id;
+        this.userId = userId;
+        this.userLogin = userLogin;
+        this.targetId = targetId;
     }
 }

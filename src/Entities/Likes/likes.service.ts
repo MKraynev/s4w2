@@ -1,10 +1,18 @@
 import { Injectable } from "@nestjs/common";
 import { LikesRepoService } from "./Repo/likesRepo.service";
 import { ExtendedLikeInfo } from "./Entities/ExtendedLikeInfo";
+import { CreateLikeWithIdDto } from "./Repo/Dtos/createLikeDto";
+import { ServiceExecutionResult } from "../../Common/Services/Types/ServiseExecutionResult";
+import { ServiceExecutionResultStatus } from "../../Common/Services/Types/ServiceExecutionStatus";
+import { ServiceDto } from "../../Common/Services/Types/ServiceDto";
+import { LikeDocument, LikeDto } from "./Repo/Schema/like.schema";
+import { MongooseFindUnit, MongooseRepoFindPattern_OR } from "../../Repos/Mongoose/Searcher/MongooseRepoFindPattern";
+import { PostService } from "../Posts/posts.service";
+import { PostsRepoService } from "../Posts/Repo/postsRepo.service";
 
 @Injectable()
 export class LikeService {
-    constructor(private likesRepo: LikesRepoService) { }
+    constructor(private likesRepo: LikesRepoService, private postRepo: PostsRepoService) { }
 
     public static GetEmptyExtendedData() {
         return new ExtendedLikeInfo();
@@ -18,41 +26,47 @@ export class LikeService {
         let result = { ...object, extendedLikesInfo }
         return result;
     }
+
+    public async SetLikeData(likeData: CreateLikeWithIdDto): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, ServiceDto<LikeDto>>> {
+        let currentLikeData = await this.FindUserLike(likeData.userId, likeData.targetId);
+
+        let resultLikeData: LikeDocument;
+
+        if (currentLikeData) {
+            //Лайк/дислайк существует
+            currentLikeData.likeStatus = likeData.likeStatus;
+            resultLikeData = await this.likesRepo.SaveDocument(currentLikeData);
+        }
+        else {
+            //лайка/дислайка еще не было
+            let foundPost = await this.postRepo.FindById(likeData.targetId);
+
+            if (!foundPost)
+                return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound);
+
+            let likeDto = new LikeDto(likeData);
+            resultLikeData = await this.likesRepo.SaveDto(likeDto);
+        }
+
+        return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, resultLikeData.toObject());
+    }
+
+
+
+    private async FindUserLike(userId: string, targetId: string): Promise<LikeDocument | undefined> {
+        let userIdFindUnit: MongooseFindUnit<LikeDto> = { field: "userId", value: userId }
+        let targetIdFindUnit: MongooseFindUnit<LikeDto> = { field: "targetId", value: targetId }
+
+        let findPattern = new MongooseRepoFindPattern_OR(userIdFindUnit, targetIdFindUnit);
+
+
+
+        let foundLikes = await this.likesRepo.FindByPatterns(findPattern, "createdAt", "desc", 0, 1) as LikeDocument[];
+        return foundLikes[0] || undefined;
+    }
 }
 
-//     public async SetLikeData(token: Token, likeData: LikeRequest): Promise<ExecutionResultContainer<ServicesWithUsersExecutionResult, LikeResponse | null>> {
-//         let checkToken = await this.tokenHandler.GetTokenLoad(token);
 
-//         if (checkToken.tokenStatus !== TokenStatus.Accepted || !checkToken.result) {
-//             return new ExecutionResultContainer(ServicesWithUsersExecutionResult.Unauthorized);
-//         }
-
-//         let userId = checkToken.result.id;
-//         let getUser = await userService.GetUserById(userId);
-//         let user = getUser.executionResultObject;
-
-//         if (getUser.executionStatus !== UserServiceExecutionResult.Success || !user) {
-//             return new ExecutionResultContainer(ServicesWithUsersExecutionResult.Unauthorized);
-//         }
-
-//         let findLike = await this.likeRepo.GetCurrentLikeStatus(userId, likeData.targetId);
-//         let previousLikeData = findLike.executionResultObject;
-
-//         if (previousLikeData) {
-//             //Лайк/дислайк существует
-//             previousLikeData.status = likeData.status;
-//         }
-//         else {
-//             //лайка/дислайка еще не было
-//             let dataForSave = new LikeDataBase(userId, user.login, likeData);
-//             previousLikeData = this.likeRepo.GetEntity(dataForSave);
-//         }
-
-//         let saveCHanges = await this.likeRepo.Save(previousLikeData);
-//         let likeResponse = new LikeResponse(saveCHanges._id, saveCHanges);
-
-//         return new ExecutionResultContainer(ServicesWithUsersExecutionResult.Success, likeResponse);
-//     }
 
 //     private async GetUserLikeStatus(userId: string, targetId: string): Promise<ExecutionResultContainer<ServicesWithUsersExecutionResult, LikeResponse | null>> {
 //         let getUserStatus = await this.likeRepo.GetCurrentLikeStatus(userId, targetId);

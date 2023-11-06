@@ -1,6 +1,6 @@
 import { HydratedDocument } from "mongoose";
-import { AvailableLikeStatus, CreateLikeDto } from "../Dtos/createLikeDto";
-import { Prop, Schema } from "@nestjs/mongoose";
+import { AvailableLikeStatus, CreateLikeWithIdDto } from "../Dtos/createLikeDto";
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 
 export type LikeDocument = HydratedDocument<LikeDto>;
 
@@ -14,7 +14,7 @@ export type LikeDocument = HydratedDocument<LikeDto>;
         }
     }
 })
-export class LikeDto extends CreateLikeDto {
+export class LikeDto extends CreateLikeWithIdDto {
     @Prop({required: true})
     userId: string;
     @Prop({required: true})
@@ -29,4 +29,10 @@ export class LikeDto extends CreateLikeDto {
     createdAt: Date;
 
     updatedAt: Date;
+
+    constructor(likeData: CreateLikeWithIdDto) {
+        super(likeData.userId, likeData.userLogin, likeData.targetId, likeData)
+    }
 }
+
+export const LikeSchema = SchemaFactory.createForClass(LikeDto);

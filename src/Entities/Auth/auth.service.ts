@@ -12,6 +12,7 @@ import { CONFIRM_REGISTRATION_URL, REFRESH_PASSWORD_URL } from "../../settings";
 import { TokenLoad_confirmEmail } from "../../Auth/Tokens/tokenLoad.confirmEmail";
 import { TokenLoad_PasswordRecovery } from "../../Auth/Tokens/tokenLoad.passwordRecovery";
 import { SignOptions } from "jsonwebtoken"
+import { TokenLoad_Access } from "../../Auth/Tokens/tokenLoad.access";
 
 export type User = { login: string; email: string; createdAt: Date; id: string };
 
@@ -96,7 +97,11 @@ export class AuthService {
 
         let RefreshJwtOption: SignOptions = { expiresIn: "5m" }
 
-        let payLoad = { id: foundUser.executionResultObject.items[0].id }
+        let payLoad: TokenLoad_Access = {
+            id: foundUser.executionResultObject.items[0].id,
+            name: foundUser.executionResultObject.items[0].login
+        }
+        
         let accessToken = await this.jwtService.signAsync(payLoad);
         let refreshToken = await this.jwtService.signAsync(payLoad, RefreshJwtOption);
 

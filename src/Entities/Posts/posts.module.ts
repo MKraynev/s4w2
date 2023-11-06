@@ -8,7 +8,7 @@ import { CommentModule } from '../Comments/comments.module';
 
 
 @Module({
-    imports: [PostsRepoModule, BlogsRepoModule, LikesModule, CommentModule],
+    imports: [PostsRepoModule, BlogsRepoModule, CommentModule, LikesModule],
     controllers: [PostController],
     providers: [PostService],
     exports: [PostService]

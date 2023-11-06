@@ -16,8 +16,7 @@ export class PostService extends CrudService<Post_CreatePostDto, PostDto, PostDo
     constructor(
         private postRepo: PostsRepoService,
         private blogsRepo: BlogsRepoService,
-        private likeService: LikeService,
-        private commentService: CommentService) { super(postRepo) }
+    ) { super(postRepo) }
 
     async CreateByBlogId(blogId: string, postData: Blogs_CreatePostDto | Post_CreatePostDto): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, ServiceDto<PostDto>>> {
         let blog = await this.blogsRepo.FindById(blogId);

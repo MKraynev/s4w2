@@ -1,3 +1,4 @@
 export type TokenLoad_Access = {
-    id: string
+    id: string,
+    name: string
 }
