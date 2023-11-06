@@ -11,7 +11,7 @@ import { ValidationPipe } from "../../Pipes/validation.pipe";
 import { AdminGuard } from "../../Auth/Guards/admin.guard";
 import { CreateLikeDto, CreateLikeWithIdDto } from "../Likes/Repo/Dtos/createLikeDto";
 import { JwtAuthGuard } from "../../Auth/Guards/jwt-auth.guard";
-import { RequestTokenLoad } from "../../Auth/Decorators/request.tokenLoad";
+import { RequestTokenLoad, TokenExpectation } from "../../Auth/Decorators/request.tokenLoad";
 import { TokenLoad_Access } from "../../Auth/Tokens/tokenLoad.access";
 
 @Controller("posts")
@@ -46,8 +46,8 @@ export class PostController {
     async GetPosts(
         @Query('sortBy') sortBy: keyof (PostDto) = "createdAt",
         @Query('sortDirection') sortDirecrion: "desc" | "asc" = "desc",
-        @QueryPaginator() paginator: InputPaginator
-
+        @QueryPaginator() paginator: InputPaginator,
+        @RequestTokenLoad(TokenExpectation.Possibly) tokenLoad: TokenLoad_Access | undefined
     ) {
         let findPost = await this.postService.Take(sortBy, sortDirecrion, undefined, undefined, paginator.skipElements, paginator.pageSize);
 

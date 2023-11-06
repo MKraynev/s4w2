@@ -7,7 +7,6 @@ import { ServiceExecutionResultStatus } from "../../Common/Services/Types/Servic
 import { ServiceDto } from "../../Common/Services/Types/ServiceDto";
 import { LikeDocument, LikeDto } from "./Repo/Schema/like.schema";
 import { MongooseFindUnit, MongooseRepoFindPattern_OR } from "../../Repos/Mongoose/Searcher/MongooseRepoFindPattern";
-import { PostService } from "../Posts/posts.service";
 import { PostsRepoService } from "../Posts/Repo/postsRepo.service";
 
 @Injectable()
@@ -18,10 +17,8 @@ export class LikeService {
         return new ExtendedLikeInfo();
     }
 
-    public async DecorateWithExtendedInfo(searchById: string, object: any) {
-        let userInfo;
-        let likeStatistic;
-        //let extendedLikesInfo = userInfo + likeStatistic
+    public async DecorateWithExtendedInfo(userId: string, searchById: string, object: any) {
+        //TODO убрать private функцию - сделать сборку через new ExtendedLikeInfo(N, M, ...)
         let extendedLikesInfo = LikeService.GetEmptyExtendedData();
         let result = { ...object, extendedLikesInfo }
         return result;
