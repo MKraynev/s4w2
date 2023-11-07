@@ -9,12 +9,17 @@ export class MongooseRepo<ModelType, CreateDTO, EntityDocument extends HydratedD
     return (await createEntity.save() as EntityDocument);
   }
 
-  async SaveDocument(document: EntityDocument){
+  async SaveDocument(document: EntityDocument) {
     return await document.save() as EntityDocument
   }
 
   async FindById(id: string): Promise<EntityDocument | null> {
-    return await this.model.findById(id);
+    try {
+      return await this.model.findById(id);
+    }
+    catch (e) {
+      return null;
+    }
   }
 
   async Find(sortBy: keyof (ModelType), sortDirection: "asc" | "desc", property?: keyof (ModelType), propertyValue?: string, skip: number = 0, limit: number = 10): Promise<EntityDocument[]> {
@@ -31,21 +36,21 @@ export class MongooseRepo<ModelType, CreateDTO, EntityDocument extends HydratedD
   }
 
   async FindByPatterns(findPattern: MongooseRepoFindPattern_OR<ModelType>, sortBy: keyof (ModelType), sortDirection: "asc" | "desc", skip: number = 0, limit: number = 10): Promise<EntityDocument[]> {
-    try{
+    try {
       let sorter = this.GetSortPattern(sortBy, sortDirection);
 
       return await this.model.find(findPattern.value).sort(sorter).skip(skip).limit(limit).exec() as EntityDocument[];
     }
-    catch{
+    catch {
       return []
     }
   }
 
-  async CountByPattern(findPattern: MongooseRepoFindPattern_OR<ModelType>){
-    try{
+  async CountByPattern(findPattern: MongooseRepoFindPattern_OR<ModelType>) {
+    try {
       return await this.model.count(findPattern.value);
     }
-    catch{
+    catch {
       return 0;
     }
   }
@@ -55,9 +60,13 @@ export class MongooseRepo<ModelType, CreateDTO, EntityDocument extends HydratedD
   }
 
   async DeleteById(id: string): Promise<EntityDocument> | null {
-    let deletedDocument = await this.model.findByIdAndDelete(id) as EntityDocument;
-
-    return deletedDocument || null;
+    try {
+      let deletedDocument = await this.model.findByIdAndDelete(id) as EntityDocument;
+      return deletedDocument || null;
+    }
+    catch {
+      return null;
+    }
   }
 
   async DeleteAll() {

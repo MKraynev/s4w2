@@ -90,7 +90,7 @@ export class LikeService {
     private async FindUserLikeStatus(userId: string, targetId: string): Promise<AvailableLikeStatus> {
         let userLikeDocument = await this.FindUserLikeDocument(userId, targetId);
 
-        return userLikeDocument.toObject().likeStatus || "None";
+        return userLikeDocument?.toObject().likeStatus || "None";
     }
 }
 
