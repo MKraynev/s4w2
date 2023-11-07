@@ -25,14 +25,13 @@ export class MongooseRepoFindPattern_AND<T>{
         if(validValues.length === 0)
             return;
 
-        let formatedCore = validValues.map(unit => {
-            let buff: any = {};
-            buff[unit.field] = { $regex: unit.value, $options: 'i' }
-            return buff;
+        let formatedValue: any = {};
+        validValues.forEach(unit => {
+            if(unit)
+            //TODO enum убивает строку - поменять
+                formatedValue[unit.field] = unit.value;
         })
-        this.value = {
-            "$and": formatedCore
-        }
+        this.value = formatedValue;
     }
 }
 

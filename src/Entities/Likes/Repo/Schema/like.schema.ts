@@ -1,5 +1,5 @@
 import { HydratedDocument } from "mongoose";
-import { AvailableLikeStatus, CreateLikeWithIdDto } from "../Dtos/createLikeDto";
+import { AvailableLikeStatus, AvailableLikeStatusArray, CreateLikeWithIdDto } from "../Dtos/createLikeDto";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 
 export type LikeDocument = HydratedDocument<LikeDto>;
@@ -23,7 +23,7 @@ export class LikeDto extends CreateLikeWithIdDto {
     @Prop({required: true})
     targetId: string;
 
-    @Prop({ type: String, enum: AvailableLikeStatus })
+    @Prop({ type: String, enum: AvailableLikeStatusArray })
     likeStatus: AvailableLikeStatus
 
     createdAt: Date;

@@ -21,7 +21,7 @@ export class LikeService {
         //TODO убрать private функцию - сделать сборку через new ExtendedLikeInfo(N, M, ...)
         let userStatus: AvailableLikeStatus = userId ?
             await this.FindUserLikeStatus(userId, searchById)
-            : AvailableLikeStatus.None;
+            : "None";
 
 
         let searchByPostId: MongooseFindUnit<LikeDto> = {
@@ -30,11 +30,11 @@ export class LikeService {
         }
         let searchByLikeStatus: MongooseFindUnit<LikeDto> = {
             field: "likeStatus",
-            value: AvailableLikeStatus.Like
+            value: "Like"
         }
         let searchByDislikeStatus: MongooseFindUnit<LikeDto> = {
             field: "likeStatus",
-            value: AvailableLikeStatus.Dislike
+            value: "Dislike"
         }
 
         let mongooseSearchLikePattern = new MongooseRepoFindPattern_AND(searchByPostId, searchByLikeStatus)
@@ -90,7 +90,7 @@ export class LikeService {
     private async FindUserLikeStatus(userId: string, targetId: string): Promise<AvailableLikeStatus> {
         let userLikeDocument = await this.FindUserLikeDocument(userId, targetId);
 
-        return userLikeDocument.toObject().likeStatus || AvailableLikeStatus.None;
+        return userLikeDocument.toObject().likeStatus || "None";
     }
 }
 

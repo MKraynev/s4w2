@@ -1,21 +1,18 @@
 import { IsEnum } from "class-validator";
 
-export enum AvailableLikeStatus {
-    "Like",
-    "Dislike",
-    "None"
-}
+export type AvailableLikeStatus = "Like" | "Dislike" | "None"
+export const AvailableLikeStatusArray: AvailableLikeStatus[] = ["Like", "Dislike", "None"]
 
 export class CreateLikeDto {
 
-    @IsEnum(AvailableLikeStatus)
+    @IsEnum(AvailableLikeStatusArray)
     public likeStatus: AvailableLikeStatus
 
     constructor(status: AvailableLikeStatus) { this.likeStatus = status }
 }
 
 export class CreateLikeWithIdDto extends CreateLikeDto {
-    
+
     public userId: string;
     public userLogin: string;
     public targetId: string;

@@ -11,10 +11,10 @@ export class ExtendedLikeInfo {
         public likesCount: number = 0,
         public dislikesCount: number = 0,
         newestLikes: Array<LikeDocument | ServiceDto<LikeDto>> = [],
-        userStatus: AvailableLikeStatus = AvailableLikeStatus.None
+        userStatus: AvailableLikeStatus = "None"
     ) {
 
-        this.myStatus = AvailableLikeStatus[userStatus];
+        this.myStatus = userStatus;
 
         this.newestLikes = newestLikes.length > 0 ?
             newestLikes.map(like => new LiteLikeInfo(like.createdAt, like.userId, like.userLogin))

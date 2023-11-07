@@ -24,12 +24,16 @@ export const RequestTokenLoad = createParamDecorator(
             case TokenExpectation.Possibly:
                 let headerAuthString = req.header('authorization');
 
-                if (!headerAuthString || !headerAuthString.startsWith("bearer "))
+                if (!headerAuthString || !headerAuthString.toLowerCase().startsWith("bearer "))
                     return undefined;
 
                 let tokenValue = headerAuthString.split(" ")[1];
                 if (tokenValue) {
-                    tokenLoad = await (new JwtService({ secret: JWT_SECRET })).verifyAsync(tokenValue) as TokenLoad_Access;
+                    try{
+                        tokenLoad = await (new JwtService({ secret: JWT_SECRET })).verifyAsync(tokenValue) as TokenLoad_Access;
+                    }
+                    catch (e){
+                    }
                 }
                 break;
 
