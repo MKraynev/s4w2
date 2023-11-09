@@ -42,8 +42,9 @@ export class LikeService {
     }
 
     public async GetLatesLikes(target: LikeTarget, likeTargetId: string, limit: number = 3): Promise<LatestLikes> {
+        let searchByTarget: MongooseFindUnit<LikeDto> = { field: "target", value: target }
         let searchByPostId: MongooseFindUnit<LikeDto> = { field: "targetId", value: likeTargetId }
-        let mongooseSearchLikePattern = new MongooseRepoFindPattern_AND(searchByPostId, this.searchByLikeStatus)
+        let mongooseSearchLikePattern = new MongooseRepoFindPattern_AND(searchByTarget, searchByPostId, this.searchByLikeStatus)
         let newestLikes = await this.likesRepo.FindByPatterns(mongooseSearchLikePattern, "createdAt", "desc", 0, limit);
 
         let liteLikes: Array<LiteLikeInfo> = newestLikes.length > 0 ?

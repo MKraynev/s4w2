@@ -37,6 +37,7 @@ export class LikeDto extends CreateLikeWithIdDto {
 
     constructor(likeData: CreateLikeWithIdDto) {
         super(likeData.userId, likeData.userLogin, likeData.target, likeData.targetId, likeData)
+        
     }
 }
 
