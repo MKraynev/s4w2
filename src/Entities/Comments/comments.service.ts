@@ -1,10 +1,6 @@
 import { Injectable } from "@nestjs/common";
-import { CrudService, TakeResult } from "../../Common/Services/crudService";
-import { CreateCommentWithTargetAndIdDto } from "./Repo/Dto/CreateCommentDto";
+import { CreateCommentDto, CreateCommentWithTargetAndIdDto } from "./Repo/Dto/CreateCommentDto";
 import { CommentRepoService } from "./Repo/commentRepo.service";
-import { UserService } from "../Users/users.service";
-import { PostService } from "../Posts/posts.service";
-import { NotFoundError } from "rxjs";
 import { ServiceExecutionResult } from "../../Common/Services/Types/ServiseExecutionResult";
 import { ServiceExecutionResultStatus } from "../../Common/Services/Types/ServiceExecutionStatus";
 import { ServiceDto } from "../../Common/Services/Types/ServiceDto";
@@ -23,7 +19,8 @@ export class CommentService {
     ) {
     }
 
-    public async Save(userId: string, userLogin, commentData: CreateCommentWithTargetAndIdDto): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, DecoratedComment>> {
+
+    public async Save(userId: string, userLogin: string, commentData: CreateCommentWithTargetAndIdDto): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, DecoratedComment>> {
         let userExist = await this.userRepo.IdExist(userId);
 
         if (!userExist)
@@ -36,46 +33,86 @@ export class CommentService {
         let commentDto = new CommentDto(userId, userLogin, commentData);
         let savedComment = (await this.commentRepo.SaveDto(commentDto)).toObject() as ServiceDto<CommentDto>;
 
-        let decoratedComment: DecoratedComment = {
-            id: savedComment.id,
-            content: savedComment.content,
-            commentatorInfo: {
-                userId: savedComment.userId,
-                userLogin: savedComment.userLogin
-            },
-            createdAt: savedComment.createdAt
-        };
+        let decoratedComment = this.Convert(savedComment);
 
         return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, decoratedComment);
     }
 
+    public async Update(commentId: string, userId: string, commentData: CreateCommentDto): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, DecoratedComment>> {
+        let foundComment = await this.commentRepo.FindById(commentId);
+        if (!foundComment)
+            return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound)
+
+        if (foundComment.userId !== userId)
+            return new ServiceExecutionResult(ServiceExecutionResultStatus.WrongUser)
+
+        foundComment.content = commentData.content;
+
+        let updatedComment = (await this.commentRepo.SaveDocument(foundComment)).toObject() as ServiceDto<CommentDto>;
+        let decoratedComment = this.Convert(updatedComment);
+
+        return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, decoratedComment);
+    }
+
+    public async Delete(commentId: string, userId: string) {
+        let foundComment = await this.commentRepo.FindById(commentId);
+        if (!foundComment)
+            return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound)
+
+        if (foundComment.userId !== userId)
+            return new ServiceExecutionResult(ServiceExecutionResultStatus.WrongUser)
+
+        let deletedComment = await this.commentRepo.DeleteById(commentId);
+
+        if (!deletedComment)
+            return new ServiceExecutionResult(ServiceExecutionResultStatus.DataBaseFailed);
+
+        return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, deletedComment);
+    }
+
+    public async TakeById(commentId: string): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, DecoratedComment>> {
+        let foundComment = await this.commentRepo.FindById(commentId);
+
+        if (!foundComment)
+            return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound);
+
+        let decoratedComment = this.Convert(foundComment.toObject());
+        return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, decoratedComment);
+    }
     public async TakeByPostId(
-        postId: string, 
-        sortBy: keyof (CommentDto), 
-        sortDirection: "asc" | "desc", 
-        skip: number = 0, 
-        limit: number = 10) : Promise<ServiceExecutionResult<ServiceExecutionResultStatus, Array<DecoratedComment>>>{
+        postId: string,
+        sortBy: keyof (CommentDto),
+        sortDirection: "asc" | "desc",
+        skip: number = 0,
+        limit: number = 10): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, Array<DecoratedComment>>> {
+        let searchByTarget: MongooseFindUnit<CommentDto> = { field: "target", value: "posts" }
         let searchByPostId: MongooseFindUnit<CommentDto> = { field: "targetId", value: postId }
-        let findPattern: MongooseRepoFindPattern_AND<CommentDto> = new MongooseRepoFindPattern_AND(searchByPostId);
+        let findPattern: MongooseRepoFindPattern_AND<CommentDto> = new MongooseRepoFindPattern_AND(searchByTarget, searchByPostId);
 
         let comments = await this.commentRepo.FindByPatterns(findPattern, sortBy, sortDirection, skip, limit);
 
         let formatedComments: Array<DecoratedComment> = comments.length > 0 ?
             comments.map(comment => {
-                let decoratedComment: DecoratedComment = {
-                    id: comment.id,
-                    content: comment.content,
-                    commentatorInfo: {
-                        userId: comment.userId,
-                        userLogin: comment.userLogin
-                    },
-                    createdAt: comment.createdAt
-                }
-
-                return decoratedComment;
+                let objComments = comment.toObject() as ServiceDto<CommentDto>;
+                return this.Convert(objComments);
             })
-            :[]
+            : []
 
         return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, formatedComments);
+    }
+
+
+
+    private Convert(comment: ServiceDto<CommentDto>): DecoratedComment {
+        let decoratedComment: DecoratedComment = {
+            id: comment.id,
+            content: comment.content,
+            commentatorInfo: {
+                userId: comment.userId,
+                userLogin: comment.userLogin
+            },
+            createdAt: comment.createdAt
+        };
+        return decoratedComment;
     }
 }

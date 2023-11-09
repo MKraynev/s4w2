@@ -87,7 +87,7 @@ export class BlogController {
       case ServiceExecutionResultStatus.Success:
         let decoratedPosts = await Promise.all(findPosts.executionResultObject.items.map(async (post) => {
           let { updatedAt, ...rest } = post;
-          let decoratedPost = await this.likeService.DecorateWithExtendedInfo(tokenLoad?.id, rest.id, rest);
+          let decoratedPost = await this.likeService.DecorateWithExtendedInfo(tokenLoad?.id, "posts", rest.id, rest);
           return decoratedPost;
         }));
 
@@ -117,7 +117,7 @@ export class BlogController {
     switch (createPost.executionStatus) {
       case ServiceExecutionResultStatus.Success:
         let { updatedAt, ...returnPost } = createPost.executionResultObject;
-        let decoratedPost = await this.likeService.DecorateWithExtendedInfo(undefined, returnPost.id, returnPost);
+        let decoratedPost = await this.likeService.DecorateWithExtendedInfo(undefined, "posts", returnPost.id, returnPost);
 
         return decoratedPost;
         break;

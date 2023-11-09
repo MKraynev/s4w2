@@ -4,6 +4,7 @@ export enum ServiceExecutionResultStatus {
     NotFound,
     NotRelevantCode,
     WrongPassword,
+    WrongUser,
     ServiceFail,
     LoginAlreadyExist,
     EmailAlreadyExist,
