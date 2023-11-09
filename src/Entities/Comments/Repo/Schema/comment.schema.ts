@@ -23,7 +23,7 @@ export class CommentDto extends CreateCommentWithTargetAndIdDto {
     @Prop({ required: true })
     userLogin: string;
 
-    @Prop({ required: true, type: Number })
+    @Prop({ required: true, type: String })
     target: CommentTarget;
 
     @Prop({ required: true })

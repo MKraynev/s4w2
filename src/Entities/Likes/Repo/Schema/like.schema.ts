@@ -1,6 +1,7 @@
 import { HydratedDocument } from "mongoose";
 import { AvailableLikeStatus, AvailableLikeStatusArray, CreateLikeWithIdDto } from "../Dtos/createLikeDto";
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { LikeTarget } from "../Dtos/likes.target";
 
 export type LikeDocument = HydratedDocument<LikeDto>;
 
@@ -20,6 +21,10 @@ export class LikeDto extends CreateLikeWithIdDto {
     @Prop({required: true})
     userLogin: string;
 
+    @Prop({ required: true, type: String })
+    target: LikeTarget;
+
+
     @Prop({required: true})
     targetId: string;
 
@@ -31,7 +36,7 @@ export class LikeDto extends CreateLikeWithIdDto {
     updatedAt: Date;
 
     constructor(likeData: CreateLikeWithIdDto) {
-        super(likeData.userId, likeData.userLogin, likeData.targetId, likeData)
+        super(likeData.userId, likeData.userLogin, likeData.target, likeData.targetId, likeData)
     }
 }
 

@@ -32,7 +32,7 @@ export class PostController {
         @Param('id') id: string,
         @RequestTokenLoad() tokenLoad: TokenLoad_Access
     ) {
-        let likeInfo: CreateLikeWithIdDto = new CreateLikeWithIdDto(tokenLoad.id, tokenLoad.name, id, likeData);
+        let likeInfo: CreateLikeWithIdDto = new CreateLikeWithIdDto(tokenLoad.id, tokenLoad.name, "posts", id, likeData);
         let setLike = await this.likeService.SetLikeData(likeInfo);
 
         switch (setLike.executionStatus) {
@@ -62,7 +62,7 @@ export class PostController {
 
                 let decoratedPosts = await Promise.all(findPost.executionResultObject.items.map(async (post) => {
                     let { updatedAt, ...rest } = post;
-                    let decoratedPost = await this.likeService.DecorateWithExtendedInfo(tokenLoad?.id, rest.id, rest)
+                    let decoratedPost = await this.likeService.DecorateWithExtendedInfo(tokenLoad?.id, "comments", rest.id, rest)
                     return decoratedPost;
                 }));
 
@@ -86,7 +86,7 @@ export class PostController {
         switch (findPost.executionStatus) {
             case ServiceExecutionResultStatus.Success:
                 let { updatedAt, ...returnPost } = findPost.executionResultObject as ServiceDto<PostDto>;
-                let decoratedPosts = await this.likeService.DecorateWithExtendedInfo(tokenLoad?.id, returnPost.id, returnPost)
+                let decoratedPosts = await this.likeService.DecorateWithExtendedInfo(tokenLoad?.id, "comments", returnPost.id, returnPost)
 
                 return decoratedPosts;
                 break;
@@ -114,8 +114,8 @@ export class PostController {
                 let foundComments = getComments.executionResultObject;
 
                 let extdendCommentsWithLikeData = await Promise.all(getComments.executionResultObject.map(async (comment) => {
-                    let likeStatistic = await this.likeService.GetLikeStatistic(comment.id);
-                    let userStatus = await this.likeService.GetUserStatus(tokenLoad.id, comment.id);
+                    let likeStatistic = await this.likeService.GetLikeStatistic("comments", comment.id);
+                    let userStatus = await this.likeService.GetUserStatus(tokenLoad?.id, "comments", comment.id);
                     let likeInfo = {
                         likeInfo: { ...likeStatistic, ...userStatus }
                     }
@@ -145,8 +145,8 @@ export class PostController {
             case ServiceExecutionResultStatus.Success:
                 let comment = saveComment.executionResultObject;
 
-                let likeStatistic = await this.likeService.GetLikeStatistic(comment.id);
-                let userStatus = await this.likeService.GetUserStatus(tokenLoad.id, comment.id);
+                let likeStatistic = await this.likeService.GetLikeStatistic("comments", comment.id);
+                let userStatus = await this.likeService.GetUserStatus(tokenLoad.id, "comments", comment.id);
                 let likeInfo = {
                     likeInfo: { ...likeStatistic, ...userStatus }
                 }
@@ -174,7 +174,7 @@ export class PostController {
         switch (savePost.executionStatus) {
             case ServiceExecutionResultStatus.Success:
                 let { updatedAt, ...returnPost } = savePost.executionResultObject;
-                let decoratedPost = await this.likeService.DecorateWithExtendedInfo(undefined, returnPost.id, returnPost);
+                let decoratedPost = await this.likeService.DecorateWithExtendedInfo(undefined, "posts", returnPost.id, returnPost);
                 return decoratedPost;
                 break;
 
