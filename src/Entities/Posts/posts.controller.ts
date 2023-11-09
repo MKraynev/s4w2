@@ -6,17 +6,20 @@ import { QueryPaginator } from "../../Common/Routes/QueryParams/PaginatorQueryPa
 import { PostDto } from "./Repo/Schema/post.schema";
 import { InputPaginator, OutputPaginator } from "../../Paginator/Paginator";
 import { LikeService } from "../Likes/likes.service";
-import { CreateCommentDto } from "../Comments/Repo/Dto/CreateCommentDto";
+import { CreateCommentDto, CreateCommentWithTargetAndIdDto } from "../Comments/Repo/Dto/CreateCommentDto";
 import { ValidationPipe } from "../../Pipes/validation.pipe";
 import { AdminGuard } from "../../Auth/Guards/admin.guard";
 import { CreateLikeDto, CreateLikeWithIdDto } from "../Likes/Repo/Dtos/createLikeDto";
 import { JwtAuthGuard } from "../../Auth/Guards/jwt-auth.guard";
 import { RequestTokenLoad, TokenExpectation } from "../../Auth/Decorators/request.tokenLoad";
 import { TokenLoad_Access } from "../../Auth/Tokens/tokenLoad.access";
+import { CommentService } from "../Comments/comments.service";
+import { DecoratedComment } from "../Comments/Repo/Dto/comment.decorated";
+import { ServiceDto } from "../../Common/Services/Types/ServiceDto";
 
 @Controller("posts")
 export class PostController {
-    constructor(private postService: PostService, private likeService: LikeService) { }
+    constructor(private postService: PostService, private likeService: LikeService, private commentService: CommentService) { }
 
     // put -> /hometask_14/api/posts/{postId}/like-status
     @Put(':id/like-status')
@@ -80,9 +83,11 @@ export class PostController {
 
         switch (findPost.executionStatus) {
             case ServiceExecutionResultStatus.Success:
-                let { updatedAt, ...returnPost } = findPost.executionResultObject;;
-                let decoratedPost = await this.likeService.DecorateWithExtendedInfo(tokenLoad?.id, returnPost.id, returnPost);
-                return decoratedPost;
+                let { updatedAt, ...returnPost } = findPost.executionResultObject as ServiceDto<PostDto>;
+                // let decoratedPost = await this.likeService.DecorateWithExtendedInfo(tokenLoad?.id, returnPost.id, returnPost);
+                let decoratedPosts = await this.likeService.DecorateWithExtendedInfo(tokenLoad.id, returnPost.id, returnPost)
+                   
+                return decoratedPosts;
                 break;
 
             default:
@@ -102,9 +107,28 @@ export class PostController {
     @UseGuards(JwtAuthGuard)
     async SaveComment(
         @Param('id') id: string,
-        @Body() commentData: CreateCommentDto) {
-        //TODO доделать
-        return id;
+        @Body(new ValidationPipe()) commentData: CreateCommentDto,
+        @RequestTokenLoad() tokenLoad: TokenLoad_Access
+    ) {
+
+        let comment = new CreateCommentWithTargetAndIdDto(id, "posts", commentData)
+        let saveComment = await this.commentService.Save(tokenLoad.id, tokenLoad.name, comment);
+
+        switch (saveComment.executionStatus) {
+            case ServiceExecutionResultStatus.Success:
+                let comment = saveComment.executionResultObject;
+                let decoratedComment: DecoratedComment = {
+                    id: comment.id,
+                    content: comment.content,
+                    commentatorInfo: {
+                        userId: comment.userId,
+                        userLogin: comment.userLogin
+                    },
+                    createdAt: comment.createdAt
+                }
+                let decoratedWithLikes = await this.likeService.DecorateWithExtendedInfo(comment.userId, comment.id, decoratedComment);
+                let { } = decoratedWithLikes;
+        }
     }
 
     //post -> /hometask_13/api/posts

@@ -14,6 +14,10 @@ export class UserService extends CrudService<UserDto, UserDto, UserDocument, Use
         super(usersRepo);
     }
 
+    public async UserExist(userId: string){
+        return await this.usersRepo.IdExist(userId);
+    }
+    
     public async TakeByLoginOrEmail(
         sortBy: keyof (UserDto) = "createdAt",
         sortDirection: "asc" | "desc" = "desc",

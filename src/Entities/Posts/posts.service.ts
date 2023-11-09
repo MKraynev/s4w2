@@ -40,5 +40,7 @@ export class PostService extends CrudService<Post_CreatePostDto, PostDto, PostDo
         return this.Take(sortBy, sortDirection, "blogId", blogId, skip, limit);
     }
 
-
+    async PostExist(postId: string){
+        return await this.postRepo.IdExist(postId);
+    }
 }

@@ -34,6 +34,14 @@ export class MongooseRepo<ModelType, CreateDTO, EntityDocument extends HydratedD
 
     return await this.model.count(searchPattern);
   }
+  async IdExist(id: string) {
+    try {
+      return await this.model.exists({ _id: id })
+    }
+    catch {
+      return false;
+    }
+  }
 
   async FindByPatterns(findPattern: MongooseRepoFindPattern_OR<ModelType>, sortBy: keyof (ModelType), sortDirection: "asc" | "desc", skip: number = 0, limit: number = 10): Promise<EntityDocument[]> {
     try {

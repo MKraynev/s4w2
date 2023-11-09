@@ -1,49 +1,38 @@
 import { Injectable } from "@nestjs/common";
 import { CrudService, TakeResult } from "../../Common/Services/crudService";
-import { CreateCommentDto } from "./Repo/Dto/CreateCommentDto";
-import { CommentDocument, CommentDto } from "./Repo/Schema/comment.schema";
+import { CreateCommentWithTargetAndIdDto } from "./Repo/Dto/CreateCommentDto";
 import { CommentRepoService } from "./Repo/commentRepo.service";
-import { MongooseFindUnit, MongooseRepoFindPattern_OR } from "../../Repos/Mongoose/Searcher/MongooseRepoFindPattern";
-import { CommentTarget } from "./Repo/Dto/CommentTarget";
-import { ServiceExecutionResultStatus } from "../../Common/Services/Types/ServiceExecutionStatus";
+import { UserService } from "../Users/users.service";
+import { PostService } from "../Posts/posts.service";
+import { NotFoundError } from "rxjs";
 import { ServiceExecutionResult } from "../../Common/Services/Types/ServiseExecutionResult";
+import { ServiceExecutionResultStatus } from "../../Common/Services/Types/ServiceExecutionStatus";
 import { ServiceDto } from "../../Common/Services/Types/ServiceDto";
+import { CommentDto } from "./Repo/Schema/comment.schema";
+import { UsersRepoService } from "../Users/Repo/usersRepo.service";
+import { PostsRepoService } from "../Posts/Repo/postsRepo.service";
 
 @Injectable()
-export class CommentService extends CrudService<CreateCommentDto, CommentDto, CommentDocument, CommentRepoService>{
-    constructor(private commentRepo: CommentRepoService) {
-        super(commentRepo);
-    }
+export class CommentService {
+    constructor(
+        private commentRepo: CommentRepoService,
+        private userRepo: UsersRepoService,
+        private postRepo: PostsRepoService
+    ) { }
 
-    public async TakeByTarget(
-        sortBy: keyof (CommentDto),
-        sortDirection: "asc" | "desc",
-        loginValue?: string,
-        emailValue?: string,
-        skip: number = 0,
-        limit: number = 10,
-        target?: CommentTarget,
-        targetId?: string,
-    ): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, TakeResult<ServiceDto<CommentDto>>>> {
-        let targetFindUnit: MongooseFindUnit<CommentDto> = target ?
-            {
-                field: "target",
-                value: target
-            }
-            : undefined;
+    public async Save(userId: string, userLogin, commentData: CreateCommentWithTargetAndIdDto): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, ServiceDto<CommentDto>>> {
+        let userExist = await this.userRepo.IdExist(userId);
 
-        let idFindUnit: MongooseFindUnit<CommentDto> = targetId ?
-            {
-                field: "targetId",
-                value: targetId
-            }
-            : undefined;
+        if (!userExist)
+            return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound);
 
-        let findPattern = new MongooseRepoFindPattern_OR(targetFindUnit, idFindUnit)
+        let targetIDExist = await this.postRepo.IdExist(commentData.targetId)
+        if (!targetIDExist)
+            return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound);
 
-        let countComments = await this.commentRepo.CountByPattern(findPattern)
-        let foundComments = (await this.commentRepo.FindByPatterns(findPattern, sortBy, sortDirection, skip, limit)).map(comment => comment.toObject()) as ServiceDto<CommentDto>[];
+        let commentDto = new CommentDto(userId, userLogin, commentData);
+        let saveComment = await this.commentRepo.SaveDto(commentDto);
 
-        return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, { count: countComments, items: foundComments });
+        return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, saveComment.toObject());
     }
 }

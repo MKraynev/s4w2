@@ -1,7 +1,8 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { CreateCommentDto } from "../Dto/CreateCommentDto";
+import { CreateCommentDto, CreateCommentWithTargetAndIdDto } from "../Dto/CreateCommentDto";
 import { CommentTarget } from "../Dto/CommentTarget";
 import { HydratedDocument } from "mongoose";
+import { DecoratedComment } from "../Dto/comment.decorated";
 
 export type CommentDocument = HydratedDocument<CommentDto>
 
@@ -15,7 +16,7 @@ export type CommentDocument = HydratedDocument<CommentDto>
         }
     }
 })
-export class CommentDto extends CreateCommentDto {
+export class CommentDto extends CreateCommentWithTargetAndIdDto {
     @Prop({ required: true })
     userId: string;
 
@@ -35,8 +36,8 @@ export class CommentDto extends CreateCommentDto {
 
     updatedAt: Date;
 
-    constructor(userId: string, userLogin: string, data: CreateCommentDto) {
-        super(data.content, data.target)
+    constructor(userId: string, userLogin: string, data: CreateCommentWithTargetAndIdDto) {
+        super(data.targetId, data.target, data)
         this.userId = userId;
         this.userLogin = userLogin;
     }

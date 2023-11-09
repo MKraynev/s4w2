@@ -1,55 +1,105 @@
 import { Injectable } from "@nestjs/common";
 import { LikesRepoService } from "./Repo/likesRepo.service";
-import { ExtendedLikeInfo } from "./Entities/ExtendedLikeInfo";
 import { AvailableLikeStatus, CreateLikeWithIdDto } from "./Repo/Dtos/createLikeDto";
 import { ServiceExecutionResult } from "../../Common/Services/Types/ServiseExecutionResult";
 import { ServiceExecutionResultStatus } from "../../Common/Services/Types/ServiceExecutionStatus";
 import { ServiceDto } from "../../Common/Services/Types/ServiceDto";
 import { LikeDocument, LikeDto } from "./Repo/Schema/like.schema";
-import { MongooseFindUnit, MongooseRepoFindPattern_AND, MongooseRepoFindPattern_OR } from "../../Repos/Mongoose/Searcher/MongooseRepoFindPattern";
+import { MongooseFindUnit, MongooseRepoFindPattern_AND } from "../../Repos/Mongoose/Searcher/MongooseRepoFindPattern";
 import { PostsRepoService } from "../Posts/Repo/postsRepo.service";
+import { LatestLikes, LikeStatistic, UserStatus } from "./Entities/like.statistic";
+import { LiteLikeInfo } from "./Entities/LiteLikeInfo";
+import { ExtendedLikeInfo } from "./Entities/ExtendedLikeInfo";
 
 @Injectable()
 export class LikeService {
-    constructor(private likesRepo: LikesRepoService, private postRepo: PostsRepoService) { }
+    private searchByLikeStatus: MongooseFindUnit<LikeDto> = { field: "likeStatus", value: "Like" }
+    private searchByDislikeStatus: MongooseFindUnit<LikeDto> = { field: "likeStatus", value: "Dislike" }
 
-    public static GetEmptyExtendedData() {
-        return new ExtendedLikeInfo();
+    constructor(
+        private likesRepo: LikesRepoService,
+        private postRepo: PostsRepoService) { }
+
+
+    public async GetLikeStatistic(searchById: string): Promise<LikeStatistic> {
+        let countLikes = await this.CountLikes(searchById);
+        let countDislikes = await this.CountDislikes(searchById);
+
+        let statisctic: LikeStatistic = {
+            likesCount: countLikes,
+            dislikesCount: countDislikes
+        }
+
+        return statisctic;
     }
 
-    public async DecorateWithExtendedInfo(userId: string | undefined, searchById: string, object: any) {
+    public async GetUserStatus(userId: string | undefined, searchById: string): Promise<UserStatus> {
+        let userLikeStatus = await this.GetUserLikeStatus(userId, searchById)
+        let userStatus: UserStatus = { myStatus: userLikeStatus }
+
+        return userStatus;
+    }
+
+    public async GetLatesLikes(likeTargetId: string, limit: number = 3): Promise<LatestLikes> {
+        let searchByPostId: MongooseFindUnit<LikeDto> = { field: "targetId", value: likeTargetId }
+        let mongooseSearchLikePattern = new MongooseRepoFindPattern_AND(searchByPostId, this.searchByLikeStatus)
+        let newestLikes = await this.likesRepo.FindByPatterns(mongooseSearchLikePattern, "createdAt", "desc", 0, limit);
+
+        let liteLikes: Array<LiteLikeInfo> = newestLikes.length > 0 ?
+            newestLikes.map(like => new LiteLikeInfo(like.createdAt, like.userId, like.userLogin))
+            : []
+
+        let latestLikes: LatestLikes = {
+            newestLikes: liteLikes
+        }
+
+        return latestLikes;
+    }
+
+    public async DecorateWithExtendedInfo<T>(userId: string | undefined, likeTargetId: string, object: T): Promise<T & { extendedLikesInfo: ExtendedLikeInfo }> {
         //TODO убрать private функцию - сделать сборку через new ExtendedLikeInfo(N, M, ...)
-        let userStatus: AvailableLikeStatus = userId ?
-            await this.FindUserLikeStatus(userId, searchById)
-            : "None";
+        let userStatus = await this.GetUserStatus(userId, likeTargetId);
+        let countLikes = await this.CountLikes(likeTargetId);
+        let countDislikes = await this.CountDislikes(likeTargetId);
+        let newestLikes = await this.GetLatesLikes(likeTargetId, 3);
 
-
-        let searchByPostId: MongooseFindUnit<LikeDto> = {
-            field: "targetId",
-            value: searchById
-        }
-        let searchByLikeStatus: MongooseFindUnit<LikeDto> = {
-            field: "likeStatus",
-            value: "Like"
-        }
-        let searchByDislikeStatus: MongooseFindUnit<LikeDto> = {
-            field: "likeStatus",
-            value: "Dislike"
+        let extendedLikesInfo: ExtendedLikeInfo = {
+            likesCount: countLikes,
+            dislikesCount: countDislikes,
+            myStatus: userStatus.myStatus,
+            newestLikes: newestLikes.newestLikes
         }
 
-        let mongooseSearchLikePattern = new MongooseRepoFindPattern_AND(searchByPostId, searchByLikeStatus)
-        let countLikes = await this.likesRepo.CountByPattern(mongooseSearchLikePattern);
-
-        let mongooseSearchDislikePattern = new MongooseRepoFindPattern_AND(searchByPostId, searchByDislikeStatus)
-        let countDislikes = await this.likesRepo.CountByPattern(mongooseSearchDislikePattern);
-
-        let newestLikes = await this.likesRepo.FindByPatterns(mongooseSearchLikePattern, "createdAt", "desc", 0, 3);        
-
-        let extendedLikesInfo = new ExtendedLikeInfo(countLikes, countDislikes, newestLikes, userStatus);
-        
-        let result = { ...object, extendedLikesInfo }
+        let result = { ...object, extendedLikesInfo };
         return result;
     }
+
+    private async CountLikes(likeTargetId: string): Promise<number> {
+        let searchByPostId: MongooseFindUnit<LikeDto> = { field: "targetId", value: likeTargetId }
+
+        let mongooseSearchLikePattern = new MongooseRepoFindPattern_AND(searchByPostId, this.searchByLikeStatus)
+        let countLikes = await this.likesRepo.CountByPattern(mongooseSearchLikePattern);
+
+        return countLikes;
+    }
+
+    private async CountDislikes(likeTargetId: string): Promise<number> {
+        let searchByPostId: MongooseFindUnit<LikeDto> = { field: "targetId", value: likeTargetId }
+
+        let mongooseSearchLikePattern = new MongooseRepoFindPattern_AND(searchByPostId, this.searchByDislikeStatus)
+        let countDislikes = await this.likesRepo.CountByPattern(mongooseSearchLikePattern);
+
+        return countDislikes;
+    }
+
+    private async GetUserLikeStatus(userId: string | undefined, likeTargetId: string): Promise<AvailableLikeStatus> {
+        let userStatus: AvailableLikeStatus = userId ?
+            await this.FindUserLikeStatus(userId, likeTargetId)
+            : "None";
+
+        return userStatus;
+    }
+
 
     public async SetLikeData(likeData: CreateLikeWithIdDto): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, ServiceDto<LikeDto>>> {
         let currentLikeData = await this.FindUserLikeDocument(likeData.userId, likeData.targetId);
