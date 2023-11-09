@@ -84,8 +84,7 @@ export class PostController {
         switch (findPost.executionStatus) {
             case ServiceExecutionResultStatus.Success:
                 let { updatedAt, ...returnPost } = findPost.executionResultObject as ServiceDto<PostDto>;
-                // let decoratedPost = await this.likeService.DecorateWithExtendedInfo(tokenLoad?.id, returnPost.id, returnPost);
-                let decoratedPosts = await this.likeService.DecorateWithExtendedInfo(tokenLoad.id, returnPost.id, returnPost)
+                let decoratedPosts = await this.likeService.DecorateWithExtendedInfo(tokenLoad?.id, returnPost.id, returnPost)
                    
                 return decoratedPosts;
                 break;
