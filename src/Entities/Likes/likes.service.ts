@@ -11,6 +11,9 @@ import { LatestLikes, LikeStatistic, UserStatus } from "./Entities/like.statisti
 import { LiteLikeInfo } from "./Entities/LiteLikeInfo";
 import { ExtendedLikeInfo } from "./Entities/ExtendedLikeInfo";
 import { LikeTarget } from "./Repo/Dtos/likes.target";
+import { PostDocument } from "../Posts/Repo/Schema/post.schema";
+import { CommentRepoService } from "../Comments/Repo/commentRepo.service";
+import { CommentDocument } from "../Comments/Repo/Schema/comment.schema";
 
 @Injectable()
 export class LikeService {
@@ -19,7 +22,8 @@ export class LikeService {
 
     constructor(
         private likesRepo: LikesRepoService,
-        private postRepo: PostsRepoService) { }
+        private postRepo: PostsRepoService,
+        private commentsRepo: CommentRepoService) { }
 
 
     public async GetLikeStatistic(target: LikeTarget, searchById: string): Promise<LikeStatistic> {
@@ -79,8 +83,8 @@ export class LikeService {
     private async CountLikes(target: LikeTarget, likeTargetId: string): Promise<number> {
         let searchByTarget: MongooseFindUnit<LikeDto> = { field: "target", value: target }
         let searchByPostId: MongooseFindUnit<LikeDto> = { field: "targetId", value: likeTargetId }
-        
-         
+
+
         let mongooseSearchLikePattern = new MongooseRepoFindPattern_AND(searchByTarget, searchByPostId, this.searchByLikeStatus)
         let countLikes = await this.likesRepo.CountByPattern(mongooseSearchLikePattern);
 
@@ -106,7 +110,7 @@ export class LikeService {
     }
 
 
-    public async SetLikeData(likeData: CreateLikeWithIdDto): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, ServiceDto<LikeDto>>> {
+    public async SetLikeData( likeData: CreateLikeWithIdDto): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, ServiceDto<LikeDto>>> {
         let currentLikeData = await this.FindUserLikeDocument(likeData.userId, likeData.target, likeData.targetId);
 
         let resultLikeData: LikeDocument;
@@ -117,10 +121,19 @@ export class LikeService {
             resultLikeData = await this.likesRepo.SaveDocument(currentLikeData);
         }
         else {
+            let targetObj: PostDocument | CommentDocument;
             //лайка/дислайка еще не было
-            let foundPost = await this.postRepo.FindById(likeData.targetId);
+            switch (likeData.target) {
+                case "posts":
+                    targetObj = await this.postRepo.FindById(likeData.targetId);
+                    break;
 
-            if (!foundPost)
+                case "comments":
+                    targetObj = await this.commentsRepo.FindById(likeData.targetId);
+                    break;
+            }
+
+            if (!targetObj)
                 return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound);
 
             let likeDto = new LikeDto(likeData);

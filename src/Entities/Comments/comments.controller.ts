@@ -23,7 +23,7 @@ export class CommentsController {
         @RequestTokenLoad() tokenLoad: TokenLoad_Access
     ) {
         let likeInfo: CreateLikeWithIdDto = new CreateLikeWithIdDto(tokenLoad.id, tokenLoad.name, "comments", id, likeData);
-        let setLike = await this.likeService.SetLikeData(likeInfo);
+        let setLike = await this.likeService.SetLikeData( likeInfo);
 
         switch (setLike.executionStatus) {
             case ServiceExecutionResultStatus.Success:
@@ -104,7 +104,7 @@ export class CommentsController {
                 let likeStatistic = await this.likeService.GetLikeStatistic("comments", comment.id);
                 let userStatus = await this.likeService.GetUserStatus(tokenLoad?.id, "comments", comment.id);
                 let likeInfo = {
-                    likeInfo: { ...likeStatistic, ...userStatus }
+                    likesInfo: { ...likeStatistic, ...userStatus }
                 }
                 let res = { ...comment, ...likeInfo }
 

@@ -115,7 +115,7 @@ export class PostController {
                     let likeStatistic = await this.likeService.GetLikeStatistic("posts", comment.id);
                     let userStatus = await this.likeService.GetUserStatus(tokenLoad?.id, "posts", comment.id);
                     let likeInfo = {
-                        likeInfo: { ...likeStatistic, ...userStatus }
+                        likesInfo: { ...likeStatistic, ...userStatus }
                     }
                     let res = { ...comment, ...likeInfo }
 
@@ -146,7 +146,7 @@ export class PostController {
                 let likeStatistic = await this.likeService.GetLikeStatistic("posts", comment.id);
                 let userStatus = await this.likeService.GetUserStatus(tokenLoad.id, "posts", comment.id);
                 let likeInfo = {
-                    likeInfo: { ...likeStatistic, ...userStatus }
+                    likesInfo: { ...likeStatistic, ...userStatus }
                 }
                 let res = { ...comment, ...likeInfo }
 
