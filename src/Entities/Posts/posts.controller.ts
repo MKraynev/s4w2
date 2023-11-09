@@ -112,8 +112,8 @@ export class PostController {
                 let foundComments = getComments.executionResultObject;
 
                 let extdendCommentsWithLikeData = await Promise.all(getComments.executionResultObject.map(async (comment) => {
-                    let likeStatistic = await this.likeService.GetLikeStatistic("posts", comment.id);
-                    let userStatus = await this.likeService.GetUserStatus(tokenLoad?.id, "posts", comment.id);
+                    let likeStatistic = await this.likeService.GetLikeStatistic("comments", comment.id);
+                    let userStatus = await this.likeService.GetUserStatus(tokenLoad?.id, "comments", comment.id);
                     let likeInfo = {
                         likesInfo: { ...likeStatistic, ...userStatus }
                     }
@@ -143,8 +143,8 @@ export class PostController {
             case ServiceExecutionResultStatus.Success:
                 let comment = saveComment.executionResultObject;
 
-                let likeStatistic = await this.likeService.GetLikeStatistic("posts", comment.id);
-                let userStatus = await this.likeService.GetUserStatus(tokenLoad.id, "posts", comment.id);
+                let likeStatistic = await this.likeService.GetLikeStatistic("comments", comment.id);
+                let userStatus = await this.likeService.GetUserStatus(tokenLoad.id, "comments", comment.id);
                 let likeInfo = {
                     likesInfo: { ...likeStatistic, ...userStatus }
                 }
