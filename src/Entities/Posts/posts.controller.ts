@@ -16,6 +16,7 @@ import { TokenLoad_Access } from "../../Auth/Tokens/tokenLoad.access";
 import { CommentService } from "../Comments/comments.service";
 import { ServiceDto } from "../../Common/Services/Types/ServiceDto";
 import { CommentDto } from "../Comments/Repo/Schema/comment.schema";
+import { ValidationPipeWithBlogIdCheck } from "../../Pipes/validation.extendedPipe.blogIdExist";
 
 @Controller("posts")
 export class PostController {
@@ -169,8 +170,7 @@ export class PostController {
     //post -> /hometask_13/api/posts
     @Post()
     @UseGuards(AdminGuard)
-    async SavePost(
-        @Body(new ValidationPipe()) post: Post_CreatePostDto
+    async SavePost(@Body(ValidationPipeWithBlogIdCheck) post: Post_CreatePostDto
     ) {
         let savePost = await this.postService.CreateByBlogId(post.blogId, post);
 

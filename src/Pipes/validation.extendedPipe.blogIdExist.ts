@@ -1,9 +1,11 @@
-import { PipeTransform, Injectable, ArgumentMetadata, BadRequestException } from '@nestjs/common';
-import { ValidationError, validate } from 'class-validator';
-import { plainToInstance } from 'class-transformer';
+import { ArgumentMetadata, BadRequestException, Injectable, PipeTransform } from "@nestjs/common";
+import { BlogsRepoService } from "../Entities/Blogs/Repo/blogsRepo.service";
+import { plainToInstance } from "class-transformer";
+import { ValidationError, validate } from "class-validator";
 
 @Injectable()
-export class ValidationPipe implements PipeTransform<any> {
+export class ValidationPipeWithBlogIdCheck implements PipeTransform {
+  constructor(private blogRepo?: BlogsRepoService) { }
   async transform(value: any, { metatype }: ArgumentMetadata) {
     if (!metatype || !this.toValidate(metatype)) {
       return value;
@@ -13,6 +15,10 @@ export class ValidationPipe implements PipeTransform<any> {
     object = this.trim(object);
 
     const errors = await validate(object);
+    let blogIdError = await this.CheckBlogId(object);
+
+    if (blogIdError) errors.push(blogIdError);
+
     if (errors.length > 0) {
       let result = {
         errorsMessages: []
@@ -29,8 +35,6 @@ export class ValidationPipe implements PipeTransform<any> {
       })
       throw new BadRequestException(result);
     }
-
-    
     return object;
   }
 
@@ -56,5 +60,19 @@ export class ValidationPipe implements PipeTransform<any> {
 
   private isObj(obj: any): boolean {
     return typeof obj === 'object' && obj !== null
+  }
+
+  private async CheckBlogId(obj: any): Promise<ValidationError | undefined> {
+    if ('blogId' in obj) {
+        let idExit = await this.blogRepo.IdExist(obj.blogId);
+        if (idExit)
+          return undefined;
+
+        let err = new ValidationError();
+        err.value = "blogId";
+        err.property = "blogId";
+
+        return err;
+    }
   }
 }
