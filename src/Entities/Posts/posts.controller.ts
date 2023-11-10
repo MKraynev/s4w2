@@ -193,7 +193,7 @@ export class PostController {
     @HttpCode(HttpStatus.NO_CONTENT)
     async UpdatePost(
         @Param("id") id: string,
-        @Body(new ValidationPipe()) postData: Post_CreatePostDto,
+        @Body(ValidationPipeWithBlogIdCheck) postData: Post_CreatePostDto,
     ) {
         let updatePost = await this.postService.UpdateDto(id, postData);
 
