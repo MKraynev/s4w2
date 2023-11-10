@@ -4,7 +4,7 @@ import { LikeService } from "../Likes/likes.service";
 import { JwtAuthGuard } from "../../Auth/Guards/jwt-auth.guard";
 import { ValidationPipe } from "../../Pipes/validation.pipe";
 import { CreateLikeDto, CreateLikeWithIdDto } from "../Likes/Repo/Dtos/createLikeDto";
-import { RequestTokenLoad } from "../../Auth/Decorators/request.tokenLoad";
+import { RequestTokenLoad, TokenExpectation } from "../../Auth/Decorators/request.tokenLoad";
 import { TokenLoad_Access } from "../../Auth/Tokens/tokenLoad.access";
 import { ServiceExecutionResultStatus } from "../../Common/Services/Types/ServiceExecutionStatus";
 import { CreateCommentDto } from "./Repo/Dto/CreateCommentDto";
@@ -23,7 +23,7 @@ export class CommentsController {
         @RequestTokenLoad() tokenLoad: TokenLoad_Access
     ) {
         let likeInfo: CreateLikeWithIdDto = new CreateLikeWithIdDto(tokenLoad.id, tokenLoad.name, "comments", id, likeData);
-        let setLike = await this.likeService.SetLikeData( likeInfo);
+        let setLike = await this.likeService.SetLikeData(likeInfo);
 
         switch (setLike.executionStatus) {
             case ServiceExecutionResultStatus.Success:
@@ -94,7 +94,7 @@ export class CommentsController {
     @Get(':id')
     async GetComments(
         @Param('id') id: string,
-        @RequestTokenLoad() tokenLoad: TokenLoad_Access | undefined
+        @RequestTokenLoad(TokenExpectation.Possibly) tokenLoad: TokenLoad_Access | undefined
     ) {
         let findComment = await this.commentService.TakeById(id);
 
@@ -109,6 +109,11 @@ export class CommentsController {
                 let res = { ...comment, ...likeInfo }
 
                 return res;
+
+            default:
+            case ServiceExecutionResultStatus.NotFound:
+                throw new NotFoundException();
+                break;
         }
     }
 }

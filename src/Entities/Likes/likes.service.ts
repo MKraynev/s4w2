@@ -63,7 +63,6 @@ export class LikeService {
     }
 
     public async DecorateWithExtendedInfo<T>(userId: string | undefined, target: LikeTarget, likeTargetId: string, object: T): Promise<T & { extendedLikesInfo: ExtendedLikeInfo }> {
-        //TODO убрать private функцию - сделать сборку через new ExtendedLikeInfo(N, M, ...)
         let userStatus = await this.GetUserStatus(userId, target, likeTargetId);
         let countLikes = await this.CountLikes(target, likeTargetId);
         let countDislikes = await this.CountDislikes(target, likeTargetId);

@@ -28,14 +28,11 @@ export class MongooseRepoFindPattern_AND<T>{
         let formatedValue: any = {};
         validValues.forEach(unit => {
             if(unit)
-            //TODO enum убивает строку - поменять
                 formatedValue[unit.field] = unit.value;
         })
         this.value = formatedValue;
     }
 }
-
-
 
 export type MongooseFindUnit<T> = {
     field: keyof (T),
