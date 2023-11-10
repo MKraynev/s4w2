@@ -124,6 +124,11 @@ export class PostController {
 
                 let pagedComments = new OutputPaginator(foundComments.length, extdendCommentsWithLikeData, paginator);
                 return pagedComments;
+
+            default:
+            case ServiceExecutionResultStatus.NotFound:
+                throw new NotFoundException();
+                break;
         }
     }
 
