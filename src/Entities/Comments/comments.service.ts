@@ -85,6 +85,11 @@ export class CommentService {
         sortDirection: "asc" | "desc",
         skip: number = 0,
         limit: number = 10): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, Array<DecoratedComment>>> {
+
+        let targetIDExist = await this.postRepo.IdExist(postId)
+        if (!targetIDExist)
+            return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound);
+
         let searchByTarget: MongooseFindUnit<CommentDto> = { field: "target", value: "posts" }
         let searchByPostId: MongooseFindUnit<CommentDto> = { field: "targetId", value: postId }
         let findPattern: MongooseRepoFindPattern_AND<CommentDto> = new MongooseRepoFindPattern_AND(searchByTarget, searchByPostId);
