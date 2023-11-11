@@ -8,7 +8,7 @@ import { UserDocument, UserDto } from "../Users/Repo/Schema/user.schema";
 import { UserService } from "../Users/users.service";
 import { Injectable } from "@nestjs/common";
 import bcrypt from "bcrypt"
-import { CONFIRM_REGISTRATION_URL, REFRESH_PASSWORD_URL } from "../../settings";
+import { CONFIRM_REGISTRATION_URL, REFRESH_PASSWORD_URL, REFRESH_TOKEN_EXPIRE } from "../../settings";
 import { TokenLoad_confirmEmail } from "../../Auth/Tokens/token.confirmEmail.data";
 import { TokenLoad_PasswordRecovery } from "../../Auth/Tokens/token.passwordRecovery.data";
 import { SignOptions } from "jsonwebtoken"
@@ -207,7 +207,7 @@ export class AuthService {
         user.currentRefreshTime = newTokens.refreshTokenData.time;
 
         this.userService.UpdateDocument(user);
-        
+
         let result: LoginTokens = {
             accessToken: newTokens.accessToken,
             refreshToken: newTokens.refreshToken
@@ -223,7 +223,7 @@ export class AuthService {
     }
 
     private async MakeTokens(user: ServiceDto<UserDto>) {
-        let RefreshJwtOption: SignOptions = { expiresIn: "5m" }
+        let RefreshJwtOption: SignOptions = { expiresIn: REFRESH_TOKEN_EXPIRE }
 
         let accessTokenData: TokenLoad_Access = {
             id: user.id,
