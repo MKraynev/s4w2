@@ -71,7 +71,7 @@ export class AuthController {
                 let result = login.executionResultObject;
 
                 response.cookie("refreshToken", result.refreshToken, { httpOnly: true, secure: true })
-                response.status(200).send({ accessToken: result.accessToken })
+                response.status(200).send(result.accessToken)
                 break;
 
             default:
