@@ -33,6 +33,9 @@ export class UserDto {
     @Prop()
     refreshPasswordTime: string
 
+    @Prop()
+    currentRefreshTime: Date;
+
     createdAt: Date;
 
     updatedAt: Date;

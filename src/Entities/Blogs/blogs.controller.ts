@@ -12,8 +12,8 @@ import { LikeService } from '../Likes/likes.service';
 import { AdminGuard } from '../../Auth/Guards/admin.guard';
 import { ValidationPipe } from '../../Pipes/validation.pipe';
 import { Blogs_CreatePostDto } from './Entities/blogs.createPostDto';
-import { RequestTokenLoad, TokenExpectation } from '../../Auth/Decorators/request.tokenLoad';
-import { TokenLoad_Access } from '../../Auth/Tokens/tokenLoad.access';
+import { ReadAccessToken, TokenExpectation } from '../../Auth/Decorators/request.accessToken';
+import { TokenLoad_Access } from '../../Auth/Tokens/token.access.data';
 
 @Controller("blogs")
 export class BlogController {
@@ -78,7 +78,7 @@ export class BlogController {
     @Query('sortBy') sortBy: keyof (PostDto) = "createdAt",
     @Query('sortDirection') sortDirecrion: "desc" | "asc" = "desc",
     @QueryPaginator() paginator: InputPaginator,
-    @RequestTokenLoad(TokenExpectation.Possibly) tokenLoad: TokenLoad_Access | undefined
+    @ReadAccessToken(TokenExpectation.Possibly) tokenLoad: TokenLoad_Access | undefined
   ) {
     let findPosts = await this.postService.TakeByBlogId(id, sortBy, sortDirecrion, paginator.skipElements, paginator.pageSize);
 

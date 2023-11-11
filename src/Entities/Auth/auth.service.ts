@@ -9,10 +9,15 @@ import { UserService } from "../Users/users.service";
 import { Injectable } from "@nestjs/common";
 import bcrypt from "bcrypt"
 import { CONFIRM_REGISTRATION_URL, REFRESH_PASSWORD_URL } from "../../settings";
-import { TokenLoad_confirmEmail } from "../../Auth/Tokens/tokenLoad.confirmEmail";
-import { TokenLoad_PasswordRecovery } from "../../Auth/Tokens/tokenLoad.passwordRecovery";
+import { TokenLoad_confirmEmail } from "../../Auth/Tokens/token.confirmEmail.data";
+import { TokenLoad_PasswordRecovery } from "../../Auth/Tokens/token.passwordRecovery.data";
 import { SignOptions } from "jsonwebtoken"
-import { TokenLoad_Access } from "../../Auth/Tokens/tokenLoad.access";
+import { TokenLoad_Access } from "../../Auth/Tokens/token.access.data";
+import { UserData } from "./Dto/auth.userData";
+import { RefreshTokenData } from "../../Auth/Tokens/token.refresh.data";
+import { AccessToken } from "../../Auth/Tokens/token.access.entity";
+import { RefreshToken } from "../../Auth/Tokens/token.refresh.entity";
+import { LoginTokens } from "./Dto/auth.tokens";
 
 export type User = { login: string; email: string; createdAt: Date; id: string };
 
@@ -82,34 +87,26 @@ export class AuthService {
 
     }
 
-    public async Login(emailOrLogin: string, password: string): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, { accessToken: string, refreshToken: string }>> {
+    public async Login(emailOrLogin: string, password: string): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, LoginTokens>> {
         let foundUser = await this.userService.TakeByLoginOrEmail("createdAt", "desc", emailOrLogin, emailOrLogin, 0, 1);
 
         if (foundUser.executionResultObject.count !== 1)
             return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound)
 
-        let user = foundUser.executionResultObject.items[0];
+        let user = foundUser.executionResultObject.items[0] as ServiceDto<UserDto>;
 
 
         let currentHash = await bcrypt.hash(password, user.salt);
         if (currentHash !== user.hash)
             return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound)
 
-        let RefreshJwtOption: SignOptions = { expiresIn: "5m" }
-
-        let payLoad: TokenLoad_Access = {
-            id: foundUser.executionResultObject.items[0].id,
-            name: foundUser.executionResultObject.items[0].login
+        let tokensData = await this.MakeTokens(user);
+        let result: LoginTokens = {
+            accessToken: tokensData.accessToken,
+            refreshToken: tokensData.refreshToken
         }
-        
-        let accessToken = await this.jwtService.signAsync(payLoad);
-        let refreshToken = await this.jwtService.signAsync(payLoad, RefreshJwtOption);
 
-        let result = {
-            accessToken: accessToken,
-            refreshToken: refreshToken
-        }
-        return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, result)
+        return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, result);
     }
 
     public async ConfrimEmail(token: string): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, ServiceDto<UserDto>>> {
@@ -180,11 +177,79 @@ export class AuthService {
         return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, saveUser.executionResultObject);
     }
 
+    public async GetPersonalData(userId: string): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, UserData>> {
+        let findUser = await this.userService.TakeByIdDto(userId);
+        if (findUser.executionStatus !== ServiceExecutionResultStatus.Success)
+            return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound);
+
+        let user = findUser.executionResultObject;
+
+        let userData: UserData = {
+            email: user.email,
+            login: user.login,
+            userId: user.id
+        }
+
+        return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, userData);
+    }
+
+    public async RefreshTokens(refreshToken: RefreshTokenData): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, LoginTokens>> {
+        let findUser = await this.userService.TakeByIdDocument(refreshToken.id);
+        if (findUser.executionStatus !== ServiceExecutionResultStatus.Success)
+            return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound);
+        let user = findUser.executionResultObject as UserDocument;
+
+        if (user.currentRefreshTime !== refreshToken.time)
+            return new ServiceExecutionResult(ServiceExecutionResultStatus.NotRelevant)
+
+        let newTokens = await this.MakeTokens(user.toObject())
+
+        user.currentRefreshTime = newTokens.refreshTokenData.time;
+
+        this.userService.UpdateDocument(user);
+        
+        let result: LoginTokens = {
+            accessToken: newTokens.accessToken,
+            refreshToken: newTokens.refreshToken
+        }
+
+        return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, result);
+    }
+
     private DeletePriveInfo(userDto: ServiceDto<UserDto>): User {
         let { salt, hash, refreshPasswordTime, updatedAt, emailConfirmed, ...rest } = userDto;
 
         return rest;
     }
 
+    private async MakeTokens(user: ServiceDto<UserDto>) {
+        let RefreshJwtOption: SignOptions = { expiresIn: "5m" }
 
+        let accessTokenData: TokenLoad_Access = {
+            id: user.id,
+            name: user.login
+        }
+
+        let refreshTokenData: RefreshTokenData = {
+            id: user.id,
+            name: user.login,
+            time: new Date()
+        }
+
+        let accessTokenCode = await this.jwtService.signAsync(accessTokenData);
+        let accessToken: AccessToken = { accessToken: accessTokenCode }
+
+        let refreshTokenCode = await this.jwtService.signAsync(refreshTokenData, RefreshJwtOption);
+        let refreshToken: RefreshToken = { refreshToken: refreshTokenCode }
+
+
+        let result = {
+            accessToken: accessToken,
+            accessTokenData: accessTokenData,
+            refreshToken: refreshToken,
+            refreshTokenData: refreshTokenData
+        }
+
+        return result;
+    }
 }

@@ -25,7 +25,7 @@ export class UserService extends CrudService<UserDto, UserDto, UserDocument, Use
         emailValue?: string,
         skip: number = 0,
         limit: number = 10,
-        format: boolean = true)
+        returnAsDto: boolean = true)
         : Promise<ServiceExecutionResult<ServiceExecutionResultStatus, TakeResult<UserDocument| ServiceDto<UserDto>>>> {
 
         let loginFindUnit: MongooseFindUnit<UserDto> = loginValue ? { field: "login", value: loginValue } : undefined;
@@ -37,7 +37,7 @@ export class UserService extends CrudService<UserDto, UserDto, UserDocument, Use
         let foundUsers = await this.usersRepo.FindByPatterns(findPattern, sortBy, sortDirection, skip, limit) as UserDocument[];
         let result: Array<ServiceDto<UserDto> | UserDocument> = foundUsers;
 
-        if (format) {
+        if (returnAsDto) {
             result = foundUsers.map(dbUser => this.RemoveAccessInfo(dbUser)) as ServiceDto<UserDto>[];
         }
 

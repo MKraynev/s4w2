@@ -1,4 +1,4 @@
-import { BadRequestException, Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards, Request, Query, UnauthorizedException, Res } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Get, HttpCode, HttpStatus, Post, UseGuards, Request, Query, UnauthorizedException, Res, NotFoundException } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import { CreateUserDto } from "../Users/Repo/Dtos/CreateUserDto";
 import { ServiceExecutionResultStatus } from "../../Common/Services/Types/ServiceExecutionStatus";
@@ -8,7 +8,11 @@ import { ValidationPipe } from "../../Pipes/validation.pipe";
 import { ConfrimWithEmailDto } from "./Dto/auth.confirmWithEmail";
 import { NewPasswordDto } from "./Dto/auth.newPasword";
 import { ConfirmWithCodeDto } from "./Dto/auth.confirmWithCode";
-
+import { JwtAuthGuard } from "../../Auth/Guards/jwt-auth.guard";
+import { ReadAccessToken } from "../../Auth/Decorators/request.accessToken";
+import { ReadRefreshToken } from "../../Auth/Decorators/request.refreshToken";
+import { RefreshTokenData } from "../../Auth/Tokens/token.refresh.data";
+import { TokenLoad_Access } from "../../Auth/Tokens/token.access.data";
 
 
 @Controller('auth')
@@ -79,7 +83,28 @@ export class AuthController {
 
 
     //post -> /hometask_14/api/auth/refresh-token
-    
+
+    public async RefreshToken(
+        @ReadRefreshToken() token: RefreshTokenData,
+        @Res({ passthrough: true }) response: Response
+    ) {
+        let getRefreshTokens = await this.authServise.RefreshTokens(token);
+
+        switch (getRefreshTokens.executionStatus) {
+            case ServiceExecutionResultStatus.Success:
+                let result = getRefreshTokens.executionResultObject;
+
+                response.cookie("refreshToken", result.refreshToken.refreshToken, { httpOnly: true, secure: true })
+                response.status(200).send(result.accessToken)
+                break;
+
+            default:
+            case ServiceExecutionResultStatus.NotRelevant:
+            case ServiceExecutionResultStatus.NotFound:
+                throw new UnauthorizedException();
+                break;
+        }
+    }
 
     //post -> /hometask_14/api/auth/registration-confirmation
     @Post('registration-confirmation')
@@ -103,7 +128,7 @@ export class AuthController {
     //post -> /hometask_14/api/auth/registration
     @Post('registration')
     @HttpCode(HttpStatus.NO_CONTENT)
-    async Registratior(
+    async Registration(
         @Body(new ValidationPipe()) userDto: CreateUserDto
     ) {
         let saveUser = await this.authServise.Registration(userDto);
@@ -147,4 +172,20 @@ export class AuthController {
     //post -> /hometask_14/api/auth/logout
 
     //get -> /hometask_14/api/auth/me
+    @Get('me')
+    @UseGuards(JwtAuthGuard)
+    public async GetPersonalData(@ReadAccessToken() tokenLoad: TokenLoad_Access) {
+        let findUserData = await this.authServise.GetPersonalData(tokenLoad.id)
+
+        switch (findUserData.executionStatus) {
+            case ServiceExecutionResultStatus.Success:
+                return findUserData.executionResultObject;
+                break;
+
+            default:
+            case ServiceExecutionResultStatus.NotFound:
+                throw new NotFoundException();
+                break;
+        }
+    }
 }

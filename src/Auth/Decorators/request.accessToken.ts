@@ -1,6 +1,6 @@
 import { ExecutionContext, createParamDecorator } from "@nestjs/common";
 import { Request } from "express"
-import { TokenLoad_Access } from "../Tokens/tokenLoad.access";
+import { TokenLoad_Access } from "../Tokens/token.access.data";
 import { JwtService } from "@nestjs/jwt";
 import { JWT_SECRET } from "../../settings";
 
@@ -9,9 +9,8 @@ export enum TokenExpectation {
     Possibly
 }
 
-export const RequestTokenLoad = createParamDecorator(
+export const ReadAccessToken = createParamDecorator(
     async (data: TokenExpectation = TokenExpectation.Expected, ctx: ExecutionContext): Promise<TokenLoad_Access | undefined> => {
-        let query = ctx.getArgs()[0].query;
 
         let req = ctx.switchToHttp().getRequest() as (Request & { user: TokenLoad_Access });
         let tokenLoad: TokenLoad_Access | undefined = undefined;
@@ -29,14 +28,13 @@ export const RequestTokenLoad = createParamDecorator(
 
                 let tokenValue = headerAuthString.split(" ")[1];
                 if (tokenValue) {
-                    try{
+                    try {
                         tokenLoad = await (new JwtService({ secret: JWT_SECRET })).verifyAsync(tokenValue) as TokenLoad_Access;
                     }
-                    catch (e){
+                    catch (e) {
                     }
                 }
                 break;
-
         }
         return tokenLoad;
     },
