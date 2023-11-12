@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { HydratedDocument } from "mongoose";
-import { CreateUserDto } from "../../../Users/Repo/Dtos/CreateUserDto";
+import { CreateDeviceDto } from "../Dtos/devices.dto.create";
 
-export type UserDocument = HydratedDocument<UserDto>
+export type DeviceDocument = HydratedDocument<DeviceDto>
 
 @Schema({
     timestamps: true,
@@ -14,39 +14,20 @@ export type UserDocument = HydratedDocument<UserDto>
         }
     }
 })
-export class UserDto {
+export class DeviceDto extends CreateDeviceDto{
     @Prop({ required: true })
-    login: string;
-
-    @Prop({ required: true })
-    email: string;
+    name: string;
 
     @Prop({ required: true })
-    salt: string;
-
-    @Prop({ required: true })
-    hash: string;
-
-    @Prop({default: false})
-    emailConfirmed: boolean;
-
-    @Prop()
-    refreshPasswordTime: string
-
-    @Prop()
-    currentRefreshTime: Date;
+    ip: string;
 
     createdAt: Date;
 
     updatedAt: Date;
 
-    constructor(createDto: CreateUserDto, salt: string, hash: string, confirmed: boolean = false) {
-        this.login = createDto.login;
-        this.email = createDto.email;
-        this.salt = salt;
-        this.hash = hash;
-        this.emailConfirmed = confirmed;
+    constructor(deviceInfo: CreateDeviceDto) {
+        super(deviceInfo.name, deviceInfo.ip)
     }
 }
 
-export const UserSchema = SchemaFactory.createForClass(UserDto);
+export const DeviceSchema = SchemaFactory.createForClass(DeviceDto);

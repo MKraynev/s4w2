@@ -1,15 +1,16 @@
-import { IsEmail, MaxLength, MinLength } from "class-validator";
+import { IsIP, MaxLength, MinLength } from "class-validator";
 
 export class CreateDeviceDto {
     //TODO Начал реализацию сущности девайс
-    @MinLength(3)
-    @MaxLength(10)
+    @MinLength(2)
+    @MaxLength(40)
     public name: string;
 
-    @IsEmail()
-    public email: string;
+    @IsIP()
+    public ip: string;
 
-    @MinLength(6)
-    @MaxLength(20)
-    public password: string;
+    constructor(name: string, ip: string) {
+        this.name = name;
+        this.ip = ip;
+    }
 }
