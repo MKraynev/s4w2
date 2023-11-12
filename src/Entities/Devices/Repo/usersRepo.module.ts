@@ -8,4 +8,4 @@ import { DeviceDto, DeviceSchema } from "./Schema/devices.schema";
     providers: [DeviceRepoService],
     exports: [DeviceRepoService]
 })
-export class UsersRepoModule { }
+export class DevicesRepoModule { }
