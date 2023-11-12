@@ -18,6 +18,7 @@ import { RefreshTokenData } from "../../Auth/Tokens/token.refresh.data";
 import { AccessToken } from "../../Auth/Tokens/token.access.entity";
 import { RefreshToken } from "../../Auth/Tokens/token.refresh.entity";
 import { LoginTokens } from "./Dto/auth.tokens";
+import { DeviceService } from "../Devices/devices.service";
 
 export type User = { login: string; email: string; createdAt: Date; id: string };
 
@@ -26,7 +27,8 @@ export class AuthService {
     constructor(
         public userService: UserService,
         private emailService: EmailService,
-        private jwtService: JwtService
+        private jwtService: JwtService,
+        private deviceService: DeviceService
     ) { }
 
     public async Registration(userDto: CreateUserDto, confirmed: boolean = false)

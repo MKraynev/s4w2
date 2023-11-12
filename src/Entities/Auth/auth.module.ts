@@ -9,12 +9,14 @@ import { AuthService } from "./auth.service";
 import { JwtStrategy } from "../../Auth/Strategies/jwt.strategy";
 import { UsersRepoModule } from "../Users/Repo/usersRepo.module";
 import { UserService } from "../Users/users.service";
+import { DevicesModule } from "../Devices/devices.module";
 
 @Module({
   imports: [
     UsersRepoModule,
     PassportModule,
     EmailModule,
+    DevicesModule,
     JwtModule.register({
       secret: JWT_SECRET,
       signOptions: { expiresIn: ACCESS_TOKEN_EXPIRE },
