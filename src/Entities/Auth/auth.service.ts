@@ -88,12 +88,12 @@ export class AuthService {
     }
 
     public async Login(emailOrLogin: string, password: string): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, LoginTokens>> {
-        let foundUser = await this.userService.TakeByLoginOrEmail("createdAt", "desc", emailOrLogin, emailOrLogin, 0, 1);
+        let foundUser = await this.userService.TakeByLoginOrEmail("createdAt", "desc", emailOrLogin, emailOrLogin, 0, 1, false);
 
         if (foundUser.executionResultObject.count !== 1)
             return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound)
 
-        let user = foundUser.executionResultObject.items[0] as ServiceDto<UserDto>;
+        let user = foundUser.executionResultObject.items[0] as UserDocument;
 
 
         let currentHash = await bcrypt.hash(password, user.salt);
@@ -101,11 +101,12 @@ export class AuthService {
             return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound)
 
         let tokensData = await this.MakeTokens(user);
+        
         let result: LoginTokens = {
             accessToken: tokensData.accessToken,
             refreshToken: tokensData.refreshToken
         }
-
+        
         return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, result);
     }
 
@@ -202,11 +203,7 @@ export class AuthService {
         if (user.currentRefreshTime !== refreshToken.time)
             return new ServiceExecutionResult(ServiceExecutionResultStatus.NotRelevant)
 
-        let newTokens = await this.MakeTokens(user.toObject())
-
-        user.currentRefreshTime = newTokens.refreshTokenData.time;
-
-        this.userService.UpdateDocument(user);
+        let newTokens = await this.MakeTokens(user)
 
         let result: LoginTokens = {
             accessToken: newTokens.accessToken,
@@ -222,20 +219,27 @@ export class AuthService {
         return rest;
     }
 
-    private async MakeTokens(user: ServiceDto<UserDto>) {
+    private async MakeTokens(user: UserDocument) {
+        let userObj = user.toObject() as ServiceDto<UserDto>;
+        let userId = userObj.id;
+
         let RefreshJwtOption: SignOptions = { expiresIn: REFRESH_TOKEN_EXPIRE }
 
         let accessTokenData: TokenLoad_Access = {
-            id: user.id,
+            id: userId,
             name: user.login
         }
 
         let refreshTokenData: RefreshTokenData = {
-            id: user.id,
+            id: userId,
             name: user.login,
             time: new Date()
         }
 
+        user.currentRefreshTime = refreshTokenData.time;
+        this.userService.UpdateDocument(user);
+
+        
         let accessTokenCode = await this.jwtService.signAsync(accessTokenData);
         let accessToken: AccessToken = { accessToken: accessTokenCode }
 
