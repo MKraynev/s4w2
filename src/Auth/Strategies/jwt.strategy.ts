@@ -2,7 +2,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable } from '@nestjs/common';
 import { JWT_SECRET } from '../../settings';
-import { TokenLoad_Access } from '../Tokens/token.access.data';
+import { AccessTokenData } from '../Tokens/token.access.data';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -15,7 +15,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    let tokenLoad: TokenLoad_Access = {
+    let tokenLoad: AccessTokenData = {
       id: payload.id,
       name: payload.name
     }

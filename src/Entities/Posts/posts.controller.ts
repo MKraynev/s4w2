@@ -12,7 +12,7 @@ import { AdminGuard } from "../../Auth/Guards/admin.guard";
 import { CreateLikeDto, CreateLikeWithIdDto } from "../Likes/Repo/Dtos/createLikeDto";
 import { JwtAuthGuard } from "../../Auth/Guards/jwt-auth.guard";
 import { ReadAccessToken, TokenExpectation } from "../../Auth/Decorators/request.accessToken";
-import { TokenLoad_Access } from "../../Auth/Tokens/token.access.data";
+import { AccessTokenData } from "../../Auth/Tokens/token.access.data";
 import { CommentService } from "../Comments/comments.service";
 import { ServiceDto } from "../../Common/Services/Types/ServiceDto";
 import { CommentDto } from "../Comments/Repo/Schema/comment.schema";
@@ -29,7 +29,7 @@ export class PostController {
     async PutLike(
         @Body(new ValidationPipe()) likeData: CreateLikeDto,
         @Param('id') id: string,
-        @ReadAccessToken() tokenLoad: TokenLoad_Access
+        @ReadAccessToken() tokenLoad: AccessTokenData
     ) {
         let likeInfo: CreateLikeWithIdDto = new CreateLikeWithIdDto(tokenLoad.id, tokenLoad.name, "posts", id, likeData);
         let setLike = await this.likeService.SetLikeData(likeInfo);
@@ -51,7 +51,7 @@ export class PostController {
         @Query('sortBy') sortBy: keyof (PostDto) = "createdAt",
         @Query('sortDirection') sortDirecrion: "desc" | "asc" = "desc",
         @QueryPaginator() paginator: InputPaginator,
-        @ReadAccessToken(TokenExpectation.Possibly) tokenLoad: TokenLoad_Access | undefined
+        @ReadAccessToken(TokenExpectation.Possibly) tokenLoad: AccessTokenData | undefined
     ) {
         let findPost = await this.postService.Take(sortBy, sortDirecrion, undefined, undefined, paginator.skipElements, paginator.pageSize);
 
@@ -78,7 +78,7 @@ export class PostController {
     @Get(":id")
     async GetPostById(
         @Param('id') id: string,
-        @ReadAccessToken(TokenExpectation.Possibly) tokenLoad: TokenLoad_Access | undefined
+        @ReadAccessToken(TokenExpectation.Possibly) tokenLoad: AccessTokenData | undefined
     ) {
         let findPost = await this.postService.TakeByIdDto(id);
 
@@ -105,7 +105,7 @@ export class PostController {
         @Query('sortDirection') sortDirecrion: "desc" | "asc" = "desc",
         @QueryPaginator() paginator: InputPaginator,
         @Param('id') id: string,
-        @ReadAccessToken(TokenExpectation.Possibly) tokenLoad: TokenLoad_Access | undefined
+        @ReadAccessToken(TokenExpectation.Possibly) tokenLoad: AccessTokenData | undefined
     ) {
         let getComments = await this.commentService.TakeByPostId(id, sortBy, sortDirecrion, paginator.skipElements, paginator.pageSize);
         switch (getComments.executionStatus) {
@@ -139,7 +139,7 @@ export class PostController {
     async SaveComment(
         @Param('id') id: string,
         @Body(new ValidationPipe()) commentData: CreateCommentDto,
-        @ReadAccessToken() tokenLoad: TokenLoad_Access
+        @ReadAccessToken() tokenLoad: AccessTokenData
     ) {
 
         let comment = new CreateCommentWithTargetAndIdDto(id, "posts", commentData)

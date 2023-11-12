@@ -1,4 +1,4 @@
-export type TokenLoad_Access = {
+export type AccessTokenData = {
     id: string,
     name: string
 }

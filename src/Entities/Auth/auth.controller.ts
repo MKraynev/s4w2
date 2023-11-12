@@ -12,7 +12,9 @@ import { JwtAuthGuard } from "../../Auth/Guards/jwt-auth.guard";
 import { ReadAccessToken } from "../../Auth/Decorators/request.accessToken";
 import { ReadRefreshToken } from "../../Auth/Decorators/request.refreshToken";
 import { RefreshTokenData } from "../../Auth/Tokens/token.refresh.data";
-import { TokenLoad_Access } from "../../Auth/Tokens/token.access.data";
+import { AccessTokenData } from "../../Auth/Tokens/token.access.data";
+import { CreateDeviceDto } from "../Devices/Repo/Dtos/devices.dto.create";
+import { ReadRequestDevice } from "../Devices/Decorators/Request/request.device";
 
 
 @Controller('auth')
@@ -63,14 +65,16 @@ export class AuthController {
     @HttpCode(HttpStatus.OK)
     async Login(
         @Body(new ValidationPipe()) userDto: LoginDto,
-        @Res({ passthrough: true }) response: Response) {
-        let login = await this.authServise.Login(userDto.loginOrEmail, userDto.password)
+        @Res({ passthrough: true }) response: Response,
+        @ReadRequestDevice() device: CreateDeviceDto
+    ) {
+        let login = await this.authServise.Login(userDto.loginOrEmail, userDto.password, device)
 
         switch (login.executionStatus) {
             case ServiceExecutionResultStatus.Success:
                 let result = login.executionResultObject;
 
-                response.cookie("refreshToken", result.refreshToken, { httpOnly: true, secure: true })
+                response.cookie("refreshToken", result.refreshToken.refreshToken, { httpOnly: true, secure: true })
                 response.status(200).send(result.accessToken)
                 break;
 
@@ -174,7 +178,7 @@ export class AuthController {
     //get -> /hometask_14/api/auth/me
     @Get('me')
     @UseGuards(JwtAuthGuard)
-    public async GetPersonalData(@ReadAccessToken() tokenLoad: TokenLoad_Access) {
+    public async GetPersonalData(@ReadAccessToken() tokenLoad: AccessTokenData) {
         let findUserData = await this.authServise.GetPersonalData(tokenLoad.id)
 
         switch (findUserData.executionStatus) {

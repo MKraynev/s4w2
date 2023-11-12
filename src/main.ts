@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import ngrok from "ngrok"
+import { PORT } from './settings';
 
 
 const ngrokConnect = async() =>{
@@ -14,8 +15,8 @@ async function bootstrap() {
   app.enableCors();
   
   
-  await app.listen(80);
+  await app.listen(PORT);
 
-  await ngrokConnect();
+  //await ngrokConnect();
 }
 bootstrap();

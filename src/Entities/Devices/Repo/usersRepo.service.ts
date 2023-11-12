@@ -6,7 +6,7 @@ import { Model } from "mongoose";
 import { CreateDeviceDto } from "./Dtos/devices.dto.create";
 
 @Injectable()
-export class DeviceRepoService extends MongooseRepo<DeviceDto, CreateDeviceDto, DeviceDocument>{
+export class DeviceRepoService extends MongooseRepo<DeviceDto, DeviceDto, DeviceDocument>{
     constructor(@InjectModel(DeviceDto.name) private deviceModel: Model<DeviceDto>) {
         super(deviceModel);
     }

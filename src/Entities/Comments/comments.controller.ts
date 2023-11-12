@@ -5,7 +5,7 @@ import { JwtAuthGuard } from "../../Auth/Guards/jwt-auth.guard";
 import { ValidationPipe } from "../../Pipes/validation.pipe";
 import { CreateLikeDto, CreateLikeWithIdDto } from "../Likes/Repo/Dtos/createLikeDto";
 import { ReadAccessToken, TokenExpectation } from "../../Auth/Decorators/request.accessToken";
-import { TokenLoad_Access } from "../../Auth/Tokens/token.access.data";
+import { AccessTokenData } from "../../Auth/Tokens/token.access.data";
 import { ServiceExecutionResultStatus } from "../../Common/Services/Types/ServiceExecutionStatus";
 import { CreateCommentDto } from "./Repo/Dto/CreateCommentDto";
 
@@ -20,7 +20,7 @@ export class CommentsController {
     async SetLike(
         @Body(new ValidationPipe()) likeData: CreateLikeDto,
         @Param('id') id: string,
-        @ReadAccessToken() tokenLoad: TokenLoad_Access
+        @ReadAccessToken() tokenLoad: AccessTokenData
     ) {
         let likeInfo: CreateLikeWithIdDto = new CreateLikeWithIdDto(tokenLoad.id, tokenLoad.name, "comments", id, likeData);
         let setLike = await this.likeService.SetLikeData(likeInfo);
@@ -44,7 +44,7 @@ export class CommentsController {
     async UpdateComment(
         @Param('id') id: string,
         @Body(new ValidationPipe()) commentData: CreateCommentDto,
-        @ReadAccessToken() tokenLoad: TokenLoad_Access
+        @ReadAccessToken() tokenLoad: AccessTokenData
     ) {
         let updateComment = await this.commentService.Update(id, tokenLoad.id, commentData);
 
@@ -70,7 +70,7 @@ export class CommentsController {
     @HttpCode(HttpStatus.NO_CONTENT)
     async DeleteComment(
         @Param('id') id: string,
-        @ReadAccessToken() tokenLoad: TokenLoad_Access
+        @ReadAccessToken() tokenLoad: AccessTokenData
     ) {
         let deleteComment = await this.commentService.Delete(id, tokenLoad.id);
 
@@ -94,7 +94,7 @@ export class CommentsController {
     @Get(':id')
     async GetComments(
         @Param('id') id: string,
-        @ReadAccessToken(TokenExpectation.Possibly) tokenLoad: TokenLoad_Access | undefined
+        @ReadAccessToken(TokenExpectation.Possibly) tokenLoad: AccessTokenData | undefined
     ) {
         let findComment = await this.commentService.TakeById(id);
 

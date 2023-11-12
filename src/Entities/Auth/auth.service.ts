@@ -9,16 +9,18 @@ import { UserService } from "../Users/users.service";
 import { Injectable } from "@nestjs/common";
 import bcrypt from "bcrypt"
 import { CONFIRM_REGISTRATION_URL, REFRESH_PASSWORD_URL, REFRESH_TOKEN_EXPIRE } from "../../settings";
-import { TokenLoad_confirmEmail } from "../../Auth/Tokens/token.confirmEmail.data";
-import { TokenLoad_PasswordRecovery } from "../../Auth/Tokens/token.passwordRecovery.data";
+import { ConfirmEmailToken } from "../../Auth/Tokens/token.confirmEmail.data";
+import { PasswordRecoveryToken } from "../../Auth/Tokens/token.passwordRecovery.data";
 import { SignOptions } from "jsonwebtoken"
-import { TokenLoad_Access } from "../../Auth/Tokens/token.access.data";
+import { AccessTokenData } from "../../Auth/Tokens/token.access.data";
 import { UserData } from "./Dto/auth.userData";
 import { RefreshTokenData } from "../../Auth/Tokens/token.refresh.data";
 import { AccessToken } from "../../Auth/Tokens/token.access.entity";
 import { RefreshToken } from "../../Auth/Tokens/token.refresh.entity";
 import { LoginTokens } from "./Dto/auth.tokens";
 import { DeviceService } from "../Devices/devices.service";
+import { DeviceDocument, DeviceDto } from "../Devices/Repo/Schema/devices.schema";
+import { CreateDeviceDto } from "../Devices/Repo/Dtos/devices.dto.create";
 
 export type User = { login: string; email: string; createdAt: Date; id: string };
 
@@ -57,7 +59,7 @@ export class AuthService {
 
         let user = saveUser.executionResultObject;
 
-        let tokenLoad: TokenLoad_confirmEmail = { id: user.id }
+        let tokenLoad: ConfirmEmailToken = { id: user.id }
         let token = await this.jwtService.signAsync(tokenLoad);
 
         if (!confirmed)
@@ -79,7 +81,7 @@ export class AuthService {
             return new ServiceExecutionResult(ServiceExecutionResultStatus.UserAlreadyConfirmed);
 
 
-        let tokenLoad: TokenLoad_confirmEmail = { id: user.id }
+        let tokenLoad: ConfirmEmailToken = { id: user.id }
         let token = await this.jwtService.signAsync(tokenLoad);
 
 
@@ -89,31 +91,33 @@ export class AuthService {
 
     }
 
-    public async Login(emailOrLogin: string, password: string): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, LoginTokens>> {
-        let foundUser = await this.userService.TakeByLoginOrEmail("createdAt", "desc", emailOrLogin, emailOrLogin, 0, 1, false);
+    public async Login(emailOrLogin: string, password: string, usedDevice: CreateDeviceDto): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, LoginTokens>> {
+        let foundUser = await this.userService.TakeByLoginOrEmail("createdAt", "desc", emailOrLogin, emailOrLogin, 0, 1);
 
         if (foundUser.executionResultObject.count !== 1)
             return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound)
 
-        let user = foundUser.executionResultObject.items[0] as UserDocument;
+        let user = foundUser.executionResultObject.items[0] as ServiceDto<UserDto>;
 
 
         let currentHash = await bcrypt.hash(password, user.salt);
         if (currentHash !== user.hash)
             return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound)
 
-        let tokensData = await this.MakeTokens(user);
-        
+
+        let userDevice = await this.deviceService.TakeExistOrNewByUserId(user.id, usedDevice) as DeviceDocument;
+        let tokensData = await this.MakeTokens(user, userDevice);
+
         let result: LoginTokens = {
             accessToken: tokensData.accessToken,
             refreshToken: tokensData.refreshToken
         }
-        
+
         return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, result);
     }
 
     public async ConfrimEmail(token: string): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, ServiceDto<UserDto>>> {
-        let tokenLoad: TokenLoad_confirmEmail = await this.jwtService.verifyAsync(token);
+        let tokenLoad: ConfirmEmailToken = await this.jwtService.verifyAsync(token);
 
         let findUser = await this.userService.TakeByIdDocument(tokenLoad.id);
         let userDocument = findUser.executionResultObject;
@@ -143,7 +147,7 @@ export class AuthService {
 
         this.userService.UpdateDocument(user);
 
-        let tokenLoad: TokenLoad_PasswordRecovery = { id: user.id, recoveryTime: user.refreshPasswordTime }
+        let tokenLoad: PasswordRecoveryToken = { id: user.id, recoveryTime: user.refreshPasswordTime }
         let token = await this.jwtService.signAsync(tokenLoad)
 
         this.emailService.SendEmail(this.emailService._PASSWORD_RECOVERY_FORM(user.email, token, REFRESH_PASSWORD_URL))
@@ -152,7 +156,7 @@ export class AuthService {
     }
 
     public async RestorePasswordEnd(newPassword: string, token: string): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, ServiceDto<UserDto>>> {
-        let tokenLoad: TokenLoad_PasswordRecovery = await this.jwtService.verifyAsync(token);
+        let tokenLoad: PasswordRecoveryToken = await this.jwtService.verifyAsync(token);
         let findUser = await this.userService.TakeByIdDocument(tokenLoad.id);
 
         if (findUser.executionStatus === ServiceExecutionResultStatus.NotFound)
@@ -197,15 +201,19 @@ export class AuthService {
     }
 
     public async RefreshTokens(refreshToken: RefreshTokenData): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, LoginTokens>> {
-        let findUser = await this.userService.TakeByIdDocument(refreshToken.id);
+        let findUser = await this.userService.TakeByIdDto(refreshToken.id);
+        let user = findUser.executionResultObject as ServiceDto<UserDto>;
+
         if (findUser.executionStatus !== ServiceExecutionResultStatus.Success)
             return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound);
-        let user = findUser.executionResultObject as UserDocument;
 
-        if (user.currentRefreshTime !== refreshToken.time)
+        let findUserDevice = await this.deviceService.TakeByIdDocument(refreshToken.device);
+        let device = findUserDevice.executionResultObject as DeviceDocument;
+
+        if (!device || device.refreshTime !== refreshToken.time)
             return new ServiceExecutionResult(ServiceExecutionResultStatus.NotRelevant)
 
-        let newTokens = await this.MakeTokens(user)
+        let newTokens = await this.MakeTokens(user, device)
 
         let result: LoginTokens = {
             accessToken: newTokens.accessToken,
@@ -221,27 +229,24 @@ export class AuthService {
         return rest;
     }
 
-    private async MakeTokens(user: UserDocument) {
-        let userObj = user.toObject() as ServiceDto<UserDto>;
-        let userId = userObj.id;
-
+    private async MakeTokens(user: ServiceDto<UserDto>, device: DeviceDocument) {
         let RefreshJwtOption: SignOptions = { expiresIn: REFRESH_TOKEN_EXPIRE }
 
-        let accessTokenData: TokenLoad_Access = {
-            id: userId,
+        let accessTokenData: AccessTokenData = {
+            id: user.id,
             name: user.login
         }
 
         let refreshTokenData: RefreshTokenData = {
-            id: userId,
+            id: user.id,
             name: user.login,
-            time: new Date()
+            time: new Date(),
+            device: device.id
         }
-
-        user.currentRefreshTime = refreshTokenData.time;
-        this.userService.UpdateDocument(user);
-
         
+        device.refreshTime = refreshTokenData.time;
+        this.deviceService.UpdateDocument(device);
+
         let accessTokenCode = await this.jwtService.signAsync(accessTokenData);
         let accessToken: AccessToken = { accessToken: accessTokenCode }
 

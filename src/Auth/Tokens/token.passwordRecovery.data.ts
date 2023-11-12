@@ -1,4 +1,4 @@
-export type TokenLoad_PasswordRecovery = {
+export type PasswordRecoveryToken = {
     id: string,
     recoveryTime: string
 }

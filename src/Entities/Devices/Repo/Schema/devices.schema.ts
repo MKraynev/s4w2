@@ -21,12 +21,19 @@ export class DeviceDto extends CreateDeviceDto{
     @Prop({ required: true })
     ip: string;
 
+    @Prop({required:true})
+    userId: string;
+
+    @Prop()
+    refreshTime: Date;
+
     createdAt: Date;
 
     updatedAt: Date;
 
-    constructor(deviceInfo: CreateDeviceDto) {
+    constructor(deviceInfo: CreateDeviceDto, userId: string) {
         super(deviceInfo.name, deviceInfo.ip)
+        this.userId = userId;
     }
 }
 
