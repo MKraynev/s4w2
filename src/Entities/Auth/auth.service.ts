@@ -223,6 +223,19 @@ export class AuthService {
         return new ServiceExecutionResult(ServiceExecutionResultStatus.Success, result);
     }
 
+    public async Logout(refreshToken: RefreshTokenData): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, undefined>> {
+        let findUserDevice = await this.deviceService.TakeByIdDocument(refreshToken.device);
+        let device = findUserDevice.executionResultObject as DeviceDocument;
+        if (!device || device.refreshTime !== refreshToken.time)
+            return new ServiceExecutionResult(ServiceExecutionResultStatus.NotRelevant)
+
+        let deleteDevice = await this.deviceService.Delete(device.id);
+        if (deleteDevice.executionStatus !== ServiceExecutionResultStatus.Success)
+            return new ServiceExecutionResult(ServiceExecutionResultStatus.DataBaseFailed);
+
+        return new ServiceExecutionResult(ServiceExecutionResultStatus.Success);
+    }
+
     private DeletePriveInfo(userDto: ServiceDto<UserDto>): User {
         let { salt, hash, refreshPasswordTime, updatedAt, emailConfirmed, ...rest } = userDto;
 
@@ -243,7 +256,7 @@ export class AuthService {
             time: new Date(),
             device: device.id
         }
-        
+
         device.refreshTime = refreshTokenData.time;
         this.deviceService.UpdateDocument(device);
 

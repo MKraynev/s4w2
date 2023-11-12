@@ -5,7 +5,7 @@ import { JwtService } from "@nestjs/jwt";
 import { JWT_SECRET } from "../../settings";
 
 export const ReadRefreshToken = createParamDecorator(
-    async (data: any, ctx: ExecutionContext): Promise<RefreshTokenData | undefined> => {
+    async (data: any, ctx: ExecutionContext): Promise<RefreshTokenData> => {
 
         let req = ctx.switchToHttp().getRequest() as Request;
         let cookieToken = req.cookies['refreshToken'];
@@ -19,7 +19,9 @@ export const ReadRefreshToken = createParamDecorator(
             return decodedObject;
         }
 
-        catch (e) { console.log(e) }
-        return undefined;
+        catch (e) { 
+            console.log(e)
+            throw new UnauthorizedException();
+         }
     }
 );

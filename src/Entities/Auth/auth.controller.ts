@@ -87,7 +87,6 @@ export class AuthController {
 
 
     //post -> /hometask_14/api/auth/refresh-token
-
     public async RefreshToken(
         @ReadRefreshToken() token: RefreshTokenData,
         @Res({ passthrough: true }) response: Response
@@ -174,6 +173,20 @@ export class AuthController {
 
 
     //post -> /hometask_14/api/auth/logout
+    @Post('logout')
+    @HttpCode(HttpStatus.NO_CONTENT)
+    public async Logout(@ReadRefreshToken() refreshToken: RefreshTokenData) {
+        let logoutUser = await this.authServise.Logout(refreshToken);
+        switch (logoutUser.executionStatus) {
+            case ServiceExecutionResultStatus.Success:
+                return;
+                break;
+
+            default:
+                throw new UnauthorizedException();
+                break;
+        }
+    }
 
     //get -> /hometask_14/api/auth/me
     @Get('me')
