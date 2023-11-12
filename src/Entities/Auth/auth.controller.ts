@@ -87,6 +87,7 @@ export class AuthController {
 
 
     //post -> /hometask_14/api/auth/refresh-token
+    @Post('refresh-token')
     public async RefreshToken(
         @ReadRefreshToken() token: RefreshTokenData,
         @Res({ passthrough: true }) response: Response
