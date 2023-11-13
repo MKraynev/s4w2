@@ -1,5 +1,7 @@
 import { HydratedDocument, Model } from "mongoose";
-import { MongooseRepoFindPattern_OR } from "./Searcher/MongooseRepoFindPattern";
+import { MongooseRepoFindPattern_AND, MongooseRepoFindPattern_EXCEPT, MongooseRepoFindPattern_OR } from "./Searcher/MongooseRepoFindPattern";
+
+export type MongooseRepoFindPatterns<T> = MongooseRepoFindPattern_OR<T> | MongooseRepoFindPattern_AND<T> | MongooseRepoFindPattern_EXCEPT<T>;
 
 export class MongooseRepo<ModelType, CreateDTO, EntityDocument extends HydratedDocument<ModelType>>{
   constructor(private model: Model<ModelType>) { }
@@ -43,7 +45,7 @@ export class MongooseRepo<ModelType, CreateDTO, EntityDocument extends HydratedD
     }
   }
 
-  async FindByPatterns(findPattern: MongooseRepoFindPattern_OR<ModelType>, sortBy: keyof (ModelType), sortDirection: "asc" | "desc", skip: number = 0, limit: number = 10): Promise<EntityDocument[]> {
+  async FindByPatterns(findPattern: MongooseRepoFindPatterns<ModelType>, sortBy: keyof (ModelType), sortDirection: "asc" | "desc", skip: number = 0, limit: number = 10): Promise<EntityDocument[]> {
     try {
       let sorter = this.GetSortPattern(sortBy, sortDirection);
 
@@ -54,12 +56,21 @@ export class MongooseRepo<ModelType, CreateDTO, EntityDocument extends HydratedD
     }
   }
 
-  async CountByPattern(findPattern: MongooseRepoFindPattern_OR<ModelType>) {
+  async CountByPattern(findPattern: MongooseRepoFindPatterns<ModelType>) {
     try {
       return await this.model.count(findPattern.value);
     }
     catch {
       return 0;
+    }
+  }
+
+  async DeleteByPattern(findPattern: MongooseRepoFindPatterns<ModelType>): Promise<number>{
+    try{
+      return (await this.model.deleteMany(findPattern)).deletedCount;
+    }
+    catch{
+      return -1;
     }
   }
 

@@ -7,6 +7,7 @@ import { PostsModule } from './Entities/Posts/posts.module';
 import { UsersModule } from './Entities/Users/users.module';
 import { AuthModule } from './Entities/Auth/auth.module';
 import { CommentsModule } from './Entities/Comments/comments.module';
+import { DevicesModule } from './Entities/Devices/devices.module';
 
 
 @Module({
@@ -17,7 +18,9 @@ import { CommentsModule } from './Entities/Comments/comments.module';
     UsersModule,
     TestModule,
     AuthModule,
-    CommentsModule],
+    CommentsModule,
+    DevicesModule
+  ],
   controllers: [],
   providers: [],
 })
