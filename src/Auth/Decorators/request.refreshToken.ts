@@ -14,13 +14,11 @@ export const ReadRefreshToken = createParamDecorator(
             throw new UnauthorizedException();
 
         try {
-            let decodedObject = await (new JwtService({ secret: JWT_SECRET })).verifyAsync(cookieToken) as RefreshTokenData;
+            let decodedObject = await (new JwtService({ secret: JWT_SECRET })).verify(cookieToken) as RefreshTokenData;
             
             return decodedObject;
         }
-
         catch (e) { 
-            console.log(e)
             throw new UnauthorizedException();
          }
     }

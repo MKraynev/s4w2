@@ -209,8 +209,8 @@ export class AuthService {
 
         let findUserDevice = await this.deviceService.TakeByIdDocument(refreshToken.device);
         let device = findUserDevice.executionResultObject as DeviceDocument;
-
-        if (!device || device.refreshTime !== refreshToken.time)
+        
+        if (!device || (device.refreshTime.toISOString() !== refreshToken.time))
             return new ServiceExecutionResult(ServiceExecutionResultStatus.NotRelevant)
 
         let newTokens = await this.MakeTokens(user, device)
@@ -226,7 +226,7 @@ export class AuthService {
     public async Logout(refreshToken: RefreshTokenData): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, undefined>> {
         let findUserDevice = await this.deviceService.TakeByIdDocument(refreshToken.device);
         let device = findUserDevice.executionResultObject as DeviceDocument;
-        if (!device || device.refreshTime !== refreshToken.time)
+        if (!device || device.refreshTime.toISOString() !== refreshToken.time)
             return new ServiceExecutionResult(ServiceExecutionResultStatus.NotRelevant)
 
         let deleteDevice = await this.deviceService.Delete(device.id);
@@ -250,14 +250,15 @@ export class AuthService {
             name: user.login
         }
 
+        device.refreshTime = new Date();
+
         let refreshTokenData: RefreshTokenData = {
             id: user.id,
             name: user.login,
-            time: new Date(),
+            time: device.refreshTime.toISOString(),
             device: device.id
         }
 
-        device.refreshTime = refreshTokenData.time;
         this.deviceService.UpdateDocument(device);
 
         let accessTokenCode = await this.jwtService.signAsync(accessTokenData);
