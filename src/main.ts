@@ -18,6 +18,6 @@ async function bootstrap() {
   
   await app.listen(PORT);
 
-  //await ngrokConnect();
+  await ngrokConnect();
 }
 bootstrap();

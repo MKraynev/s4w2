@@ -7,6 +7,8 @@ import { MongooseFindUnit, MongooseRepoFindPattern_AND, MongooseRepoFindPattern_
 import { RefreshTokenData } from "../../Auth/Tokens/token.refresh.data";
 import { BlogDto } from "../Blogs/Repo/Schema/blog.schema";
 import { DeviceInfo } from "./Repo/Dtos/devices.dto.return";
+import { ServiceExecutionResult } from "../../Common/Services/Types/ServiseExecutionResult";
+import { ServiceExecutionResultStatus } from "../../Common/Services/Types/ServiceExecutionStatus";
 
 @Injectable()
 export class DeviceService extends CrudService<CreateDeviceDto, DeviceDto, DeviceDocument, DeviceRepoService>{
@@ -29,7 +31,7 @@ export class DeviceService extends CrudService<CreateDeviceDto, DeviceDto, Devic
         return savedDto as DeviceDocument;
     }
     public async GetUserDevices(refreshToken: RefreshTokenData) {
-        let userDevices = await this.UsersDevices(refreshToken.id);
+        let userDevices = await this.GetUsersDevices(refreshToken.id);
 
         let formatedDevices: DeviceInfo[] = userDevices.map(device => {
             let devInfo: DeviceInfo = {
@@ -56,12 +58,27 @@ export class DeviceService extends CrudService<CreateDeviceDto, DeviceDto, Devic
         let findPattern: MongooseRepoFindPattern_EXCEPT<DeviceDto> = new MongooseRepoFindPattern_EXCEPT(exceptDeviceId, findByUserId);
 
         let count = await this.deviceRepo.DeleteByPattern(findPattern);
-        
-        return count > 0 ? true : false;
+
+        return count > 0 ?
+            new ServiceExecutionResult(ServiceExecutionResultStatus.Success)
+            : new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound);;
 
     }
 
-    private async UsersDevices(userId: string, limit: number = 20): Promise<DeviceDocument[]> {
+    public async DisableOne(deviceId: string, refreshToken: RefreshTokenData): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, undefined>> {
+        let userDevices = await this.GetUsersDevices(refreshToken.id);
+
+        if (userDevices.findIndex(device => device.id === deviceId) === -1)
+            return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound);
+
+        let deleteDevice = await this.deviceRepo.DeleteById(deviceId);
+
+        return new ServiceExecutionResult(ServiceExecutionResultStatus.Success);
+
+
+    }
+
+    private async GetUsersDevices(userId: string, limit: number = 20): Promise<DeviceDocument[]> {
         let findByUserId: MongooseFindUnit<DeviceDto> = { field: "userId", value: userId }
         let searchPattern: MongooseRepoFindPattern_AND<BlogDto> = new MongooseRepoFindPattern_AND(findByUserId);
 

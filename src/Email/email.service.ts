@@ -20,7 +20,6 @@ export class EmailService {
 
     async SendEmail(content: Mail) {
         let res = await this.mailerService.sendMail(content).catch(err => this.ErrorLog(err))
-        console.log("send status", res);
     }
 
     private ErrorLog(err: Error) {
