@@ -15,8 +15,9 @@ import { RefreshTokenData } from "../../Auth/Tokens/token.refresh.data";
 import { AccessTokenData } from "../../Auth/Tokens/token.access.data";
 import { CreateDeviceDto } from "../Devices/Repo/Dtos/devices.dto.create";
 import { ReadRequestDevice } from "../Devices/Decorators/Request/request.device";
+import { Throttle } from "@nestjs/throttler";
 
-
+@Throttle({ default: { limit: 5, ttl: 10000 } })
 @Controller('auth')
 export class AuthController {
     constructor(private authServise: AuthService) { }
