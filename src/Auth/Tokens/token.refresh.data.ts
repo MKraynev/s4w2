@@ -1,6 +1,6 @@
 export type RefreshTokenData = {
     id: string,
     name: string,
-    device: string,
+    deviceId: string,
     time: string
 }

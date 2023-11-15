@@ -65,12 +65,20 @@ export class MongooseRepo<ModelType, CreateDTO, EntityDocument extends HydratedD
     }
   }
 
-  async DeleteByPattern(findPattern: MongooseRepoFindPatterns<ModelType>): Promise<number>{
+  async DeleteByPattern(findPattern: MongooseRepoFindPatterns<ModelType>): Promise<{acknowledged: boolean, deletedCount: number}>{
     try{
-      return (await this.model.deleteMany(findPattern)).deletedCount;
+      let deleteMany = await this.model.deleteMany(findPattern.value);
+      return {
+        acknowledged: deleteMany.acknowledged,
+        deletedCount: deleteMany.deletedCount
+      }
+
     }
     catch{
-      return -1;
+      return {
+        acknowledged: false,
+        deletedCount: 0
+      }
     }
   }
 

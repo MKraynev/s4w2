@@ -207,10 +207,12 @@ export class AuthService {
         if (findUser.executionStatus !== ServiceExecutionResultStatus.Success)
             return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound);
 
-        let findUserDevice = await this.deviceService.TakeByIdDocument(refreshToken.device);
+        let findUserDevice = await this.deviceService.TakeByIdDocument(refreshToken.deviceId);
+        let findStatus = findUserDevice.executionStatus;
         let device = findUserDevice.executionResultObject as DeviceDocument;
         
-        if (!device || (device.refreshTime.toISOString() !== refreshToken.time))
+        if ((findStatus === ServiceExecutionResultStatus.NotFound)
+            || (device.refreshTime.toISOString() !== refreshToken.time))
             return new ServiceExecutionResult(ServiceExecutionResultStatus.NotRelevant)
 
         let newTokens = await this.MakeTokens(user, device)
@@ -224,7 +226,7 @@ export class AuthService {
     }
 
     public async Logout(refreshToken: RefreshTokenData): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, undefined>> {
-        let findUserDevice = await this.deviceService.TakeByIdDocument(refreshToken.device);
+        let findUserDevice = await this.deviceService.TakeByIdDocument(refreshToken.deviceId);
         let device = findUserDevice.executionResultObject as DeviceDocument;
         if (!device || device.refreshTime.toISOString() !== refreshToken.time)
             return new ServiceExecutionResult(ServiceExecutionResultStatus.NotRelevant)
@@ -256,7 +258,7 @@ export class AuthService {
             id: user.id,
             name: user.login,
             time: device.refreshTime.toISOString(),
-            device: device.id
+            deviceId: device.id
         }
 
         this.deviceService.UpdateDocument(device);

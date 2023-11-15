@@ -1,8 +1,9 @@
-import { Controller, Delete, Get, HttpCode, HttpStatus, Param, UnauthorizedException } from "@nestjs/common";
+import { Controller, Delete, ForbiddenException, Get, HttpCode, HttpStatus, NotFoundException, Param, UnauthorizedException } from "@nestjs/common";
 import { DeviceService } from "./devices.service";
 import { ReadRefreshToken } from "../../Auth/Decorators/request.refreshToken";
 import { RefreshTokenData } from "../../Auth/Tokens/token.refresh.data";
 import { ServiceExecutionResultStatus } from "../../Common/Services/Types/ServiceExecutionStatus";
+import { NotFoundError } from "rxjs";
 
 
 @Controller('security')
@@ -12,7 +13,6 @@ export class DevicesController {
     @Get('devices')
     async GetDevices(@ReadRefreshToken() refreshToken: RefreshTokenData) {
         let userDevices = await this.deviceService.GetUserDevices(refreshToken);
-
         return userDevices;
     }
 
@@ -22,13 +22,9 @@ export class DevicesController {
         let deleteDevices = await this.deviceService.DisableRestDevices(refreshToken);
 
         switch (deleteDevices.executionStatus) {
+            default:
             case ServiceExecutionResultStatus.Success:
                 return;
-                break;
-
-
-            default:
-                throw new UnauthorizedException();
                 break;
         }
     }
@@ -46,8 +42,13 @@ export class DevicesController {
                 return;
                 break;
 
+            case ServiceExecutionResultStatus.WrongUser:
+                throw new ForbiddenException();
+                break;
+
             default:
-                throw new UnauthorizedException();
+            case ServiceExecutionResultStatus.NotFound:
+                throw new NotFoundException();
                 break;
         }
     }

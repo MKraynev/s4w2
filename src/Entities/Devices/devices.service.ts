@@ -47,35 +47,35 @@ export class DeviceService extends CrudService<CreateDeviceDto, DeviceDto, Devic
     }
 
     public async DisableRestDevices(refreshToken: RefreshTokenData) {
-        let findByUserId: MongooseFindUnit<DeviceDto> = {
-            field: "userId",
-            value: refreshToken.id
-        }
-        let exceptDeviceId: MongooseFindUnit<DeviceDto> = {
-            field: '_id',
-            value: refreshToken.device
-        }
-        let findPattern: MongooseRepoFindPattern_EXCEPT<DeviceDto> = new MongooseRepoFindPattern_EXCEPT(exceptDeviceId, findByUserId);
+        let device = await this.deviceRepo.FindById(refreshToken.deviceId);
 
-        let count = await this.deviceRepo.DeleteByPattern(findPattern);
+        let findByUserId: MongooseFindUnit<DeviceDto> = { field: "userId", value: refreshToken.id }
+        let findByDeviceId: MongooseFindUnit<DeviceDto> = { field: "_id", value: refreshToken.deviceId }
 
-        return count > 0 ?
+        let findPattern: MongooseRepoFindPattern_EXCEPT<DeviceDto> = new MongooseRepoFindPattern_EXCEPT(findByDeviceId, findByUserId);
+
+        let delMany = await this.deviceRepo.DeleteByPattern(findPattern);
+
+        this.deviceRepo.SaveDocument(device);
+        return delMany.acknowledged ?
             new ServiceExecutionResult(ServiceExecutionResultStatus.Success)
             : new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound);;
 
     }
 
     public async DisableOne(deviceId: string, refreshToken: RefreshTokenData): Promise<ServiceExecutionResult<ServiceExecutionResultStatus, undefined>> {
-        let userDevices = await this.GetUsersDevices(refreshToken.id);
+        let userDevice = await this.deviceRepo.FindById(deviceId);
 
-        if (userDevices.findIndex(device => device.id === deviceId) === -1)
+        if (!userDevice)
             return new ServiceExecutionResult(ServiceExecutionResultStatus.NotFound);
+
+        if (userDevice.userId !== refreshToken.id)
+            return new ServiceExecutionResult(ServiceExecutionResultStatus.WrongUser);
+
 
         let deleteDevice = await this.deviceRepo.DeleteById(deviceId);
 
         return new ServiceExecutionResult(ServiceExecutionResultStatus.Success);
-
-
     }
 
     private async GetUsersDevices(userId: string, limit: number = 20): Promise<DeviceDocument[]> {

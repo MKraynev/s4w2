@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 export class MongooseRepoFindPattern_OR<T>{
     readonly value: any = {};
 
@@ -42,15 +44,16 @@ export class MongooseRepoFindPattern_EXCEPT<T> {
             throw new Error(`${MongooseRepoFindPattern_EXCEPT.name} - except parametr or findUnits cant be undefined`)
 
         let validValues = findUnits.filter(value => value);
-        
+
         let formatedValue: any = {};
         validValues.forEach(unit => {
             if (unit)
                 formatedValue[unit.field] = unit.value;
         })
-
         this.value = formatedValue;
         this.value[exceptUnit.field] = { $ne: exceptUnit.value };
+        if (exceptUnit.field = '_id')
+            this.value[exceptUnit.field] = { $ne: new mongoose.Types.ObjectId(exceptUnit.value as string) };
     }
 }
 

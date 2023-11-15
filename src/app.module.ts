@@ -23,8 +23,8 @@ import { APP_GUARD } from '@nestjs/core';
     CommentsModule,
     DevicesModule,
     ThrottlerModule.forRoot([{
-      ttl: 60000,
-      limit: 40,
+      ttl: 10000,
+      limit: 200,
     }])
   ],
   controllers: [],
